@@ -11,6 +11,7 @@ __all__ = ["load_config_defaults", "parse_args"]
 
 
 def _config_paths() -> List[str]:
+    """Return the ordered list of default config locations."""
     home = os.path.expanduser("~")
     if os.name == "nt":
         appdata = os.environ.get("APPDATA")
@@ -24,10 +25,12 @@ def _config_paths() -> List[str]:
 
 
 def _normalize_path(value: str) -> str:
+    """Normalize a path for comparison."""
     return os.path.normcase(os.path.abspath(os.path.expanduser(value)))
 
 
 def _section_matches(section: str, cwd: str) -> bool:
+    """Return True if a section matches the current working directory."""
     if section.lower() == "default":
         return True
     section_path = _normalize_path(section)
@@ -39,6 +42,7 @@ def _section_matches(section: str, cwd: str) -> bool:
 
 
 def _get_option(section: configparser.SectionProxy, key: str) -> str | None:
+    """Return a config option with hyphen/underscore fallback."""
     if key in section:
         return section.get(key)
     alt = key.replace("-", "_")
@@ -48,6 +52,7 @@ def _get_option(section: configparser.SectionProxy, key: str) -> str | None:
 
 
 def _parse_bool(value: str) -> bool:
+    """Parse a boolean config value."""
     normalized = value.strip().lower()
     if normalized in {"1", "yes", "true", "on"}:
         return True
@@ -59,6 +64,14 @@ def _parse_bool(value: str) -> bool:
 def load_config_defaults(
     cwd: str, config_file: str | None = None, config_section: str | None = None
 ) -> dict[str, object]:
+    """Load option defaults from config files.
+
+    The search order is ``./.sembr`` then ``~/.sembr`` on macOS/Linux, or
+    ``.\\sembr.ini`` then ``%APPDATA%\\sembr\\sembr.ini`` on Windows. A section
+    matching the current working directory (or ``[default]``) provides default
+    values for CLI options. Passing ``config_file`` or ``config_section``
+    overrides the default search behavior.
+    """
     defaults: dict[str, object] = {}
     cwd_normalized = _normalize_path(cwd)
     paths = [config_file] if config_file else _config_paths()
@@ -106,6 +119,7 @@ def load_config_defaults(
 
 
 def parse_args(argv: Sequence[str]) -> argparse.Namespace:
+    """Parse CLI arguments, applying config defaults."""
     config_parser = argparse.ArgumentParser(add_help=False)
     config_parser.add_argument("-c", "--config-file")
     config_parser.add_argument("-s", "--config-section")

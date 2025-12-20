@@ -12,6 +12,7 @@ __all__ = ["main"]
 
 
 def _read_input(path: str | None) -> str:
+    """Read UTF-8 input from a file or stdin."""
     if path:
         with open(path, "rb") as handle:
             data = handle.read()
@@ -21,6 +22,7 @@ def _read_input(path: str | None) -> str:
 
 
 def _write_output(path: str | None, text: str) -> None:
+    """Write UTF-8 output to a file or stdout."""
     if path:
         with open(path, "w", encoding="utf-8") as handle:
             handle.write(text)
@@ -29,7 +31,13 @@ def _write_output(path: str | None, text: str) -> None:
 
 
 def main(argv: Sequence[str] | None = None) -> None:
-    """Entry point for the pysembr script."""
+    """Run the CLI entry point.
+
+    This function parses CLI arguments and configuration defaults, reads text
+    from stdin or a file, applies SemBr-style splitting, and writes the result
+    to stdout or a file. It is intended for use as the console script entry
+    point and as a programmatic CLI wrapper.
+    """
     args = parse_args(argv if argv is not None else sys.argv[1:])
     if args.list_languages:
         sys.stdout.write(",".join(sembr.list_languages()) + "\n")

@@ -126,19 +126,22 @@ _LANGUAGE_ALIASES = {
     "ger": "german",
 }
 
-__all__ = [
-    "list_languages",
-    "resolve_languages",
-    "split_line",
-    "split_text",
-]
+__all__ = ["list_languages", "resolve_languages", "split_line", "split_text"]
 
 
 def list_languages() -> List[str]:
+    """Return supported language identifiers.
+
+    Use the returned values with the ``languages`` argument of ``split_line`` or
+    ``split_text`` to restrict language-specific break words. The list is stable
+    for the current version of the package and includes only the canonical
+    language names (not aliases like ``en`` or ``de``).
+    """
     return list(_BREAK_WORDS_BY_LANGUAGE)
 
 
 def _find_protected_spans(text: str) -> List[tuple[int, int]]:
+    """Return start/end spans that should not be split."""
     spans: List[tuple[int, int]] = []
     for match in re.finditer(r"!?\[[^\]]*\]\([^)]+\)", text):
         spans.append((match.start(), match.end()))
@@ -146,16 +149,19 @@ def _find_protected_spans(text: str) -> List[tuple[int, int]]:
 
 
 def _index_in_spans(index: int, spans: Sequence[tuple[int, int]]) -> bool:
+    """Return True if index falls inside any protected span."""
     return any(start <= index < end for start, end in spans)
 
 
 def _is_hyphenated_at(text: str, start: int, end: int) -> bool:
+    """Return True if the match is within a hyphenated word."""
     before = text[start - 1] if start > 0 else ""
     after = text[end] if end < len(text) else ""
     return before == "-" or after == "-"
 
 
 def _split_on_sentences(text: str, spans: Sequence[tuple[int, int]]) -> List[str]:
+    """Split text at sentence punctuation while respecting protected spans."""
     parts: List[str] = []
     start = 0
     for index, char in enumerate(text):
@@ -173,6 +179,7 @@ def _split_on_sentences(text: str, spans: Sequence[tuple[int, int]]) -> List[str
 
 
 def _split_with_punctuation(text: str, width: int) -> List[str]:
+    """Split text at punctuation to reduce line length."""
     if len(text) <= width:
         return [text]
     pieces: List[str] = []
@@ -214,6 +221,7 @@ def _split_with_break_words(
     width: int,
     words: Sequence[str],
 ) -> List[str]:
+    """Split text at break words to reduce line length."""
     if len(text) <= width or not words:
         return [text]
     pattern = re.compile(rf"\b({'|'.join(map(re.escape, words))})\b", re.IGNORECASE)
@@ -243,6 +251,11 @@ def _split_with_break_words(
 
 
 def resolve_languages(value: str) -> List[str]:
+    """Resolve a language list string into canonical language names.
+
+    Accepts comma-separated values like ``english,german`` or ``all``. Aliases
+    such as ``en`` and ``de`` are normalized to canonical names.
+    """
     if not value:
         return list(_BREAK_WORDS_BY_LANGUAGE)
     normalized = value.strip().lower()
@@ -266,6 +279,7 @@ def resolve_languages(value: str) -> List[str]:
 def _collect_words(
     languages: Iterable[str], extended: bool
 ) -> tuple[List[str], List[str]]:
+    """Return base and extended word lists for the selected languages."""
     base_words: List[str] = []
     conj_words: List[str] = []
     for language in languages:
@@ -282,6 +296,14 @@ def split_line(
     extended: bool,
     languages: Sequence[str] | None = None,
 ) -> List[str]:
+    """Split a single line using SemBr-inspired rules.
+
+    The function first splits at sentence punctuation (``. ! ?``). If the line
+    is still longer than ``width``, it splits at additional punctuation, then
+    at language-specific break words. When ``extended`` is True, conjunctions
+    and prepositions are used as a last fallback. The ``languages`` parameter
+    restricts the word lists used for break-word splitting.
+    """
     if not line:
         return [line]
 
@@ -322,6 +344,12 @@ def split_text(
     extended: bool,
     languages: Sequence[str] | None = None,
 ) -> str:
+    """Split every line in a text block and return the resulting text.
+
+    Each input line is processed by ``split_line`` and the output lines are
+    joined with newlines. A trailing newline is preserved if present in the
+    input string.
+    """
     lines = text.splitlines()
     ends_with_newline = text.endswith("\n")
     output: List[str] = []
