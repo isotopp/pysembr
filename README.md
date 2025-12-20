@@ -1,6 +1,10 @@
 # pysembr
 
-pysembr is a small command-line filter that wraps long lines of text with simple, punctuation-aware splitting rules. It is intended for piping text through stdin/stdout or for file-to-file processing.
+pysembr is a small command-line filter
+that wraps long lines of text with simple,
+punctuation-aware splitting rules.
+It is intended for piping text through stdin/
+stdout or for file-to-file processing.
 
 ## What it does
 
@@ -15,6 +19,8 @@ pysembr is a small command-line filter that wraps long lines of text with simple
 
 This project is managed by [uv](https://github.com/astral-sh/uv).
 
+1. Have `uv` installed.
+2. Clone the repository: 
 ```bash
 uv venv
 uv pip install -e .
@@ -64,6 +70,12 @@ List available languages:
 pysembr --list-languages
 ```
 
+Show effective options and config selection:
+
+```bash
+pysembr --show-options
+```
+
 ## Configuration file
 
 Defaults can be set in a configparser file:
@@ -101,6 +113,7 @@ extended = true
 - `--list-languages`: List available languages and exit.
 - `--config-file` / `-c`: Config file path (overrides default search).
 - `--config-section` / `-s`: Config section name (overrides default selection).
+- `--show-options`: Print effective options and exit.
 
 ## Notes
 

@@ -36,6 +36,7 @@ This repository contains `pysembr`, a Python command-line text filter. It reads 
 - `--list-languages`: List available languages and exit.
 - `--config-file`, `-c`: Config file path (overrides default search).
 - `--config-section`, `-s`: Config section name (overrides default selection).
+- `--show-options`: Print effective options and exit.
 
 ## Configuration
 

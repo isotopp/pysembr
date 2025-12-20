@@ -10,8 +10,10 @@ def test_config_defaults_first_match_wins(tmp_path, monkeypatch) -> None:
         encoding="utf-8",
     )
     monkeypatch.chdir(tmp_path)
-    defaults = load_config_defaults(str(tmp_path))
+    defaults, path, section = load_config_defaults(str(tmp_path))
     assert defaults["width"] == 70
+    assert path is not None
+    assert section == "default"
 
 
 def test_config_defaults_path_section_applies(tmp_path, monkeypatch) -> None:
@@ -21,8 +23,10 @@ def test_config_defaults_path_section_applies(tmp_path, monkeypatch) -> None:
         encoding="utf-8",
     )
     monkeypatch.chdir(tmp_path)
-    defaults = load_config_defaults(str(tmp_path))
+    defaults, path, section = load_config_defaults(str(tmp_path))
     assert defaults["width"] == 60
+    assert path is not None
+    assert section == str(tmp_path)
 
 
 def test_config_section_override(tmp_path, monkeypatch) -> None:
@@ -32,16 +36,24 @@ def test_config_section_override(tmp_path, monkeypatch) -> None:
         encoding="utf-8",
     )
     monkeypatch.chdir(tmp_path)
-    defaults = load_config_defaults(str(tmp_path), config_section="default")
+    defaults, path, section = load_config_defaults(
+        str(tmp_path), config_section="default"
+    )
     assert defaults["width"] == 70
+    assert path is not None
+    assert section == "default"
 
 
 def test_config_file_override(tmp_path, monkeypatch) -> None:
     config = tmp_path / "custom.ini"
     config.write_text("""[default]\nwidth = 65\n""", encoding="utf-8")
     monkeypatch.chdir(tmp_path)
-    defaults = load_config_defaults(str(tmp_path), config_file=str(config))
+    defaults, path, section = load_config_defaults(
+        str(tmp_path), config_file=str(config)
+    )
     assert defaults["width"] == 65
+    assert path == str(config)
+    assert section == "default"
 
 
 def test_config_section_missing_raises(tmp_path, monkeypatch) -> None:

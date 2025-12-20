@@ -63,14 +63,15 @@ def _parse_bool(value: str) -> bool:
 
 def load_config_defaults(
     cwd: str, config_file: str | None = None, config_section: str | None = None
-) -> dict[str, object]:
+) -> tuple[dict[str, object], str | None, str | None]:
     """Load option defaults from config files.
 
     The search order is ``./.sembr`` then ``~/.sembr`` on macOS/Linux, or
     ``.\\sembr.ini`` then ``%APPDATA%\\sembr\\sembr.ini`` on Windows. A section
     matching the current working directory (or ``[default]``) provides default
     values for CLI options. Passing ``config_file`` or ``config_section``
-    overrides the default search behavior.
+    overrides the default search behavior. The returned tuple includes the
+    resolved config path and section name, if any.
     """
     defaults: dict[str, object] = {}
     cwd_normalized = _normalize_path(cwd)
@@ -112,10 +113,10 @@ def load_config_defaults(
             if value is not None:
                 defaults[key] = _parse_bool(value)
 
-        return defaults
+        return defaults, path, matched_section.name
     if config_section:
         raise ValueError(f"Config section not found: {config_section}")
-    return defaults
+    return defaults, None, None
 
 
 def parse_args(argv: Sequence[str]) -> argparse.Namespace:
@@ -123,10 +124,11 @@ def parse_args(argv: Sequence[str]) -> argparse.Namespace:
     config_parser = argparse.ArgumentParser(add_help=False)
     config_parser.add_argument("-c", "--config-file")
     config_parser.add_argument("-s", "--config-section")
+    config_parser.add_argument("--show-options", action="store_true")
     config_args, remaining = config_parser.parse_known_args(argv)
 
     try:
-        config_defaults = load_config_defaults(
+        config_defaults, config_path, config_section = load_config_defaults(
             os.getcwd(), config_args.config_file, config_args.config_section
         )
     except ValueError as exc:
@@ -190,4 +192,13 @@ def parse_args(argv: Sequence[str]) -> argparse.Namespace:
         default=config_defaults.get("list-languages", False),
         help="List available languages and exit.",
     )
-    return parser.parse_args(remaining)
+    parser.add_argument(
+        "--show-options",
+        action="store_true",
+        default=config_args.show_options,
+        help="Show effective options and exit.",
+    )
+    args = parser.parse_args(remaining)
+    args._config_path = config_path
+    args._config_section = config_section
+    return args
