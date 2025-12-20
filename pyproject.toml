@@ -1,6 +1,6 @@
 [project]
 name = "pysembr"
-version = "1.0.1"
+version = "1.0.2"
 description = "Split lines in a natural language text according to sembr-inspired rules."
 readme = "README.md"
 requires-python = ">=3.11"
@@ -22,7 +22,7 @@ dev = [
 ]
 
 [tool.bumpver]
-current_version = "1.0.1"
+current_version = "1.0.2"
 version_pattern = "MAJOR.MINOR.PATCH"
 commit = true
 tag = true
