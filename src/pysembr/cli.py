@@ -339,19 +339,32 @@ def _parse_bool(value: str) -> bool:
     raise ValueError(f"Invalid boolean value: {value}")
 
 
-def _load_config_defaults(cwd: str) -> dict[str, object]:
+def _load_config_defaults(
+    cwd: str, config_file: str | None = None, config_section: str | None = None
+) -> dict[str, object]:
     defaults: dict[str, object] = {}
     cwd_normalized = _normalize_path(cwd)
-    for path in _config_paths():
+    paths = [config_file] if config_file else _config_paths()
+    if config_file and not os.path.exists(config_file):
+        raise ValueError(f"Config file not found: {config_file}")
+    for path in paths:
+        if not path:
+            continue
         if not os.path.exists(path):
             continue
         parser = configparser.ConfigParser()
         parser.read(path)
         matched_section = None
-        for section in parser.sections():
-            if _section_matches(section, cwd_normalized):
-                matched_section = parser[section]
-                break
+        if config_section:
+            if parser.has_section(config_section):
+                matched_section = parser[config_section]
+            else:
+                continue
+        else:
+            for section in parser.sections():
+                if _section_matches(section, cwd_normalized):
+                    matched_section = parser[section]
+                    break
         if not matched_section:
             continue
 
@@ -370,6 +383,8 @@ def _load_config_defaults(cwd: str) -> dict[str, object]:
                 defaults[key] = _parse_bool(value)
 
         return defaults
+    if config_section:
+        raise ValueError(f"Config section not found: {config_section}")
     return defaults
 
 
@@ -450,12 +465,30 @@ def _write_output(path: str | None, text: str) -> None:
 
 
 def _parse_args(argv: Sequence[str]) -> argparse.Namespace:
+    config_parser = argparse.ArgumentParser(add_help=False)
+    config_parser.add_argument("-c", "--config-file")
+    config_parser.add_argument("-s", "--config-section")
+    config_args, remaining = config_parser.parse_known_args(argv)
+
     try:
-        config_defaults = _load_config_defaults(os.getcwd())
+        config_defaults = _load_config_defaults(
+            os.getcwd(), config_args.config_file, config_args.config_section
+        )
     except ValueError as exc:
         raise SystemExit(str(exc)) from exc
+
     parser = argparse.ArgumentParser(
         description="Split long lines with punctuation-aware rules."
+    )
+    parser.add_argument(
+        "-c",
+        "--config-file",
+        help="Config file path (overrides default search).",
+    )
+    parser.add_argument(
+        "-s",
+        "--config-section",
+        help="Config section name (overrides default selection).",
     )
     parser.add_argument(
         "-i",
@@ -502,7 +535,7 @@ def _parse_args(argv: Sequence[str]) -> argparse.Namespace:
         default=config_defaults.get("list-languages", False),
         help="List available languages and exit.",
     )
-    return parser.parse_args(argv)
+    return parser.parse_args(remaining)
 
 
 def main(argv: Sequence[str] | None = None) -> None:

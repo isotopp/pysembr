@@ -34,6 +34,8 @@ This repository contains `pysembr`, a Python command-line text filter. It reads 
 - `--extended`, `-e`: Enable conjunction/preposition splitting.
 - `--languages`, `-l`: Comma-separated languages to enable (or `all`).
 - `--list-languages`: List available languages and exit.
+- `--config-file`, `-c`: Config file path (overrides default search).
+- `--config-section`, `-s`: Config section name (overrides default selection).
 
 ## Configuration
 
@@ -42,6 +44,7 @@ This repository contains `pysembr`, a Python command-line text filter. It reads 
 - Windows: `.\sembr.ini`, then `%APPDATA%\sembr\sembr.ini`.
 - Sections: use `[default]` or a path section like `[/Users/kris/Source]`.
 - The first matching section (in order) is used and search stops.
+- If `--config-file` or `--config-section` are provided, they override the default search.
 
 ## Coding standards
 

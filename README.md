@@ -70,6 +70,7 @@ Defaults can be set in a configparser file:
 
 - macOS/Linux: `./.sembr`, then `~/.sembr`
 - Windows: `.\sembr.ini`, then `%APPDATA%\sembr\sembr.ini`
+- Or specify a custom file/section with `--config-file` / `--config-section`.
 
 The first matching section is used, in order, and search stops:
 
@@ -98,6 +99,8 @@ extended = true
 - `--extended` / `-e`: Split at conjunctions/prepositions when needed.
 - `--languages` / `-l`: Comma-separated languages to enable, or `all` (default).
 - `--list-languages`: List available languages and exit.
+- `--config-file` / `-c`: Config file path (overrides default search).
+- `--config-section` / `-s`: Config section name (overrides default selection).
 
 ## Notes
 
