@@ -1,0 +1,55 @@
+# IDEs and editor settings
+.idea/
+.vscode/
+*.sublime-project
+*.sublime-workspace
+
+# Editor backups and temp files
+*~
+*.bak
+*.swp
+*.swo
+*.tmp
+*.orig
+*.rej
+
+# Python bytecode and caches
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+.coverage.*
+htmlcov/
+.pytype/
+build/
+dist/
+
+# Virtual environments
+.venv/
+venv/
+ENV/
+.env/
+
+# Build artifacts
+build/
+dist/
+*.egg-info/
+.eggs/
+
+# OS junk
+.DS_Store
+.DS_Store?
+.Spotlight-V100
+.Trashes
+Thumbs.db
+Desktop.ini
+
+# Logs
+*.log
+
+# Misc
+.tmp/
+.cache/
