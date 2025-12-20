@@ -1,6 +1,6 @@
 import textwrap
 
-from pysembr.cli import split_line, split_text
+from pysembr.cli import _maybe_fix_mojibake, split_line, split_text
 
 
 def test_split_at_periods_when_over_width() -> None:
@@ -47,6 +47,18 @@ def test_language_selection_filters_break_words() -> None:
         line, width=10, force=False, extended=False, languages=["german"]
     )
     assert parts == ["alpha", "dass beta"]
+
+
+def test_split_at_punctuation_with_closing_quote() -> None:
+    line = 'alpha." beta'
+    parts = split_line(line, width=8, force=False, extended=False)
+    assert parts == ['alpha."', "beta"]
+
+
+def test_mojibake_fix_mac_roman() -> None:
+    bad = "‚ÄúHello‚Äù"
+    fixed = _maybe_fix_mojibake(bad)
+    assert fixed == "“Hello”"
 
 
 def test_split_text_preserves_trailing_newline() -> None:

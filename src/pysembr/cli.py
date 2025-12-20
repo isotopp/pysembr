@@ -9,6 +9,7 @@ from typing import Iterable, List, Sequence
 
 
 _PUNCTUATION = (",", ";", ":", "!", "?", "—", "–", "…", "/", ")")
+_CLOSING_QUOTES = ('"', "”", "’")
 _BREAK_WORDS_BY_LANGUAGE = {
     "english": (
         "this",
@@ -74,6 +75,22 @@ _CONJ_PREP_BY_LANGUAGE = {
         "then",
         "because",
         "since",
+        "to",
+        "of",
+        "from",
+        "into",
+        "through",
+        "between",
+        "against",
+        "over",
+        "under",
+        "around",
+        "behind",
+        "beyond",
+        "within",
+        "during",
+        "before",
+        "after",
     ),
     "german": (
         "und",
@@ -86,6 +103,21 @@ _CONJ_PREP_BY_LANGUAGE = {
         "damit",
         "wenn",
         "als",
+        "mit",
+        "ohne",
+        "vor",
+        "nach",
+        "zwischen",
+        "gegen",
+        "ueber",
+        "unter",
+        "hinter",
+        "durch",
+        "innerhalb",
+        "ausser",
+        "auf",
+        "bei",
+        "bis",
     ),
 }
 _LANGUAGE_ALIASES = {
@@ -102,9 +134,12 @@ def _split_on_periods(text: str) -> List[str]:
     start = 0
     for index, char in enumerate(text):
         if char == ".":
-            chunk = text[start : index + 1].strip()
+            end = index + 1
+            if end < len(text) and text[end] in _CLOSING_QUOTES:
+                end += 1
+            chunk = text[start:end].strip()
             parts.append(chunk)
-            start = index + 1
+            start = end
     tail = text[start:].strip()
     if tail:
         parts.append(tail)
@@ -121,11 +156,18 @@ def _split_with_punctuation(text: str, width: int) -> List[str]:
         for index in range(min(width, len(remaining) - 1), -1, -1):
             if remaining[index] in _PUNCTUATION:
                 split_at = index + 1
+                if split_at < len(remaining) and remaining[split_at] in _CLOSING_QUOTES:
+                    split_at += 1
                 break
         if split_at == -1:
             for index in range(width + 1, len(remaining)):
                 if remaining[index] in _PUNCTUATION:
                     split_at = index + 1
+                    if (
+                        split_at < len(remaining)
+                        and remaining[split_at] in _CLOSING_QUOTES
+                    ):
+                        split_at += 1
                     break
         if split_at == -1:
             break
@@ -195,6 +237,30 @@ def _collect_words(
     return base_words, conj_words
 
 
+_MOJIBAKE_MARKERS = ("‚Ä", "â€", "Ã", "Â")
+
+
+def _maybe_fix_mojibake(text: str) -> str:
+    if not any(marker in text for marker in _MOJIBAKE_MARKERS):
+        return text
+
+    def score(value: str) -> int:
+        return sum(value.count(marker) for marker in _MOJIBAKE_MARKERS)
+
+    best = text
+    best_score = score(text)
+    for encoding in ("mac_roman", "cp1252"):
+        try:
+            candidate = text.encode(encoding).decode("utf-8")
+        except UnicodeError:
+            continue
+        candidate_score = score(candidate)
+        if candidate_score < best_score:
+            best = candidate
+            best_score = candidate_score
+    return best
+
+
 def split_line(
     line: str,
     width: int,
@@ -256,9 +322,12 @@ def split_text(
 
 def _read_input(path: str | None) -> str:
     if path:
-        with open(path, "r", encoding="utf-8") as handle:
-            return handle.read()
-    return sys.stdin.read()
+        with open(path, "rb") as handle:
+            data = handle.read()
+    else:
+        data = sys.stdin.buffer.read()
+    text = data.decode("utf-8")
+    return _maybe_fix_mojibake(text)
 
 
 def _write_output(path: str | None, text: str) -> None:
