@@ -15,7 +15,27 @@ package = true
 
 [dependency-groups]
 dev = [
+    "bumpver>=2025.1131",
     "mypy>=1.19.1",
     "pytest>=9.0.2",
     "ruff>=0.14.10",
+]
+
+[tool.bumpver]
+current_version = "1.0.1"
+version_pattern = "MAJOR.MINOR.PATCH"
+commit = true
+tag = true
+commit_message = "bump version {old_version} -> {new_version}"
+tag_message = "{new_version}"
+tag_scope = "default"
+pre_commit_hook = ""
+post_commit_hook = ""
+
+[tool.bumpver.file_patterns]
+"pyproject.toml" = [
+    'version = "{version}"',
+]
+"src/pysembr/__init__.py" = [
+    '__version__ = "{version}"',
 ]

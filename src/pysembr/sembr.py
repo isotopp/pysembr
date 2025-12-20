@@ -166,9 +166,13 @@ def _split_on_sentences(text: str, spans: Sequence[tuple[int, int]]) -> List[str
     start = 0
     for index, char in enumerate(text):
         if char in _SENTENCE_PUNCTUATION and not _index_in_spans(index, spans):
-            end = index + 1
-            if end < len(text) and text[end] in _CLOSING_QUOTES:
+            next_index = index + 1
+            end = next_index
+            if next_index < len(text) and text[next_index] in _CLOSING_QUOTES:
                 end += 1
+                next_index += 1
+            if next_index >= len(text) or not text[next_index].isspace():
+                continue
             chunk = text[start:end].strip()
             parts.append(chunk)
             start = end

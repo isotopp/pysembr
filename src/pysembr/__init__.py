@@ -10,3 +10,4 @@ __all__ = [
     "split_line",
     "split_text",
 ]
+__version__ = "1.0.1"

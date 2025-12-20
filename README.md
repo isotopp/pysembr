@@ -9,7 +9,7 @@ stdout or for file-to-file processing.
 ## What it does
 
 - Reads text from stdin or an input file.
-- Splits lines at sentence boundaries (`.`, `!`, `?`) by default.
+- Splits lines at sentence boundaries (`.`, `!`, `?`) by default when followed by whitespace.
 - If needed, splits at commas or other punctuation.
 - If punctuation is not enough, splits at sentence-break words (English and German).
 - If `--extended` is enabled, can also split at conjunctions/prepositions.

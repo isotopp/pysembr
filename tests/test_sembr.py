@@ -77,6 +77,12 @@ def test_no_split_inside_hyphenated_word() -> None:
     assert parts == [line]
 
 
+def test_sentence_punctuation_requires_trailing_whitespace() -> None:
+    line = "Version 2025.3 released. Next."
+    parts = split_line(line, width=75, force=True, extended=False)
+    assert parts == ["Version 2025.3 released.", "Next."]
+
+
 def test_split_text_preserves_trailing_newline() -> None:
     text = "alpha beta. gamma delta.\n"
     result = split_text(text, width=12, force=True, extended=False)
