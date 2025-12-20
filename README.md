@@ -122,6 +122,7 @@ languages = english,german
 - `--config-file` / `-c`: Config file path (overrides default search).
 - `--config-section` / `-s`: Config section name (overrides default selection).
 - `--front-matter` / `--no-front-matter`: Preserve or format leading YAML front matter (default: preserve).
+- `--version`: Print the version and exit.
 - `--show-options`: Print effective options and exit.
 
 ## Use it in IntelliJ/PyCharm/WebStorm

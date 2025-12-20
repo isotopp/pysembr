@@ -36,6 +36,6 @@ post_commit_hook = ""
 "pyproject.toml" = [
     'version = "{version}"',
 ]
-"src/pysembr/__init__.py" = [
+"src/pysembr/version.py" = [
     '__version__ = "{version}"',
 ]

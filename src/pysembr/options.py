@@ -7,6 +7,8 @@ import configparser
 import os
 from typing import List, Sequence
 
+from pysembr.version import __version__
+
 __all__ = ["load_config_defaults", "parse_args"]
 
 
@@ -125,6 +127,11 @@ def parse_args(argv: Sequence[str]) -> argparse.Namespace:
     config_parser.add_argument("-c", "--config-file")
     config_parser.add_argument("-s", "--config-section")
     config_parser.add_argument("--show-options", action="store_true")
+    config_parser.add_argument(
+        "--version",
+        action="version",
+        version=__version__,
+    )
     config_args, remaining = config_parser.parse_known_args(argv)
 
     try:
@@ -203,6 +210,12 @@ def parse_args(argv: Sequence[str]) -> argparse.Namespace:
         action="store_true",
         default=config_args.show_options,
         help="Show effective options and exit.",
+    )
+    parser.add_argument(
+        "--version",
+        action="version",
+        version=__version__,
+        help="Show the version and exit.",
     )
     args = parser.parse_args(remaining)
     args._config_path = config_path

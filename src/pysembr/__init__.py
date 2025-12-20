@@ -2,6 +2,7 @@
 
 from pysembr.cli import main
 from pysembr.sembr import list_languages, resolve_languages, split_line, split_text
+from pysembr.version import __version__
 
 __all__ = [
     "list_languages",
@@ -9,5 +10,5 @@ __all__ = [
     "resolve_languages",
     "split_line",
     "split_text",
+    "__version__",
 ]
-__version__ = "1.0.3"
