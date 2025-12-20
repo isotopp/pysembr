@@ -8,30 +8,7 @@ from typing import Sequence
 from pysembr import sembr
 from pysembr.options import parse_args
 
-_MOJIBAKE_MARKERS = ("‚Ä", "â€", "Ã", "Â")
-
 __all__ = ["main"]
-
-
-def _maybe_fix_mojibake(text: str) -> str:
-    if not any(marker in text for marker in _MOJIBAKE_MARKERS):
-        return text
-
-    def score(value: str) -> int:
-        return sum(value.count(marker) for marker in _MOJIBAKE_MARKERS)
-
-    best = text
-    best_score = score(text)
-    for encoding in ("mac_roman", "cp1252"):
-        try:
-            candidate = text.encode(encoding).decode("utf-8")
-        except UnicodeError:
-            continue
-        candidate_score = score(candidate)
-        if candidate_score < best_score:
-            best = candidate
-            best_score = candidate_score
-    return best
 
 
 def _read_input(path: str | None) -> str:
@@ -40,8 +17,7 @@ def _read_input(path: str | None) -> str:
             data = handle.read()
     else:
         data = sys.stdin.buffer.read()
-    text = data.decode("utf-8")
-    return _maybe_fix_mojibake(text)
+    return data.decode("utf-8")
 
 
 def _write_output(path: str | None, text: str) -> None:
