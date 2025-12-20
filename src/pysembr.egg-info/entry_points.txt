@@ -1,0 +1,2 @@
+[console_scripts]
+pysembr = pysembr.cli:main

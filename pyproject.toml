@@ -1,0 +1,21 @@
+[project]
+name = "pysembr"
+version = "0.1.0"
+description = "Punctuation-aware line splitter for text streams."
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "MIT" }
+authors = [{ name = "Kris" }]
+
+[project.scripts]
+pysembr = "pysembr.cli:main"
+
+[tool.uv]
+package = true
+
+[dependency-groups]
+dev = [
+    "mypy>=1.19.1",
+    "pytest>=9.0.2",
+    "ruff>=0.14.10",
+]
