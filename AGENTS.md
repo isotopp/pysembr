@@ -18,7 +18,8 @@ This repository contains `pysembr`, a Python command-line text filter. It reads 
 - Split priority:
   1. Split at "." (highest priority).
   2. If still too long, split at "," or other punctuation.
-  3. If still too long and `--extended` is set, split at sentence-break words in English and German (e.g., "this", "that", "diese", "jener").
+  3. If still too long, split at sentence-break words in English and German.
+  4. If still too long and `--extended` is set, split at conjunctions/prepositions.
 - `--force` forces splits at "." even when the line is shorter than the width.
 - If stdin/stdout and file options are both provided, file options take precedence.
 
@@ -28,7 +29,9 @@ This repository contains `pysembr`, a Python command-line text filter. It reads 
 - `--outfile`, `-o`: Output file path. Otherwise write stdout.
 - `--width`, `-w`: Target line width (default 75).
 - `--force`, `-f`: Force sentence split at "." even below width.
-- `--extended`, `-e`: Enable extended split at sentence-break words.
+- `--extended`, `-e`: Enable conjunction/preposition splitting.
+- `--languages`, `-l`: Comma-separated languages to enable (or `all`).
+- `--list-languages`: List available languages and exit.
 
 ## Coding standards
 

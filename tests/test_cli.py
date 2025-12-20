@@ -21,10 +21,32 @@ def test_split_at_punctuation_if_period_not_enough() -> None:
     assert parts == ["alpha,", "beta,", "gamma"]
 
 
-def test_split_at_break_words_when_extended() -> None:
+def test_split_at_break_words_in_normal_mode() -> None:
     line = "alpha this beta that gamma"
-    parts = split_line(line, width=10, force=False, extended=True)
+    parts = split_line(line, width=10, force=False, extended=False)
     assert parts == ["alpha", "this beta", "that gamma"]
+
+
+def test_split_at_conjunctions_only_with_extended() -> None:
+    line = "alpha and beta and gamma"
+    parts = split_line(line, width=10, force=False, extended=False)
+    assert parts == [line]
+
+    parts = split_line(line, width=10, force=False, extended=True)
+    assert parts == ["alpha", "and beta", "and gamma"]
+
+
+def test_language_selection_filters_break_words() -> None:
+    line = "alpha dass beta"
+    parts = split_line(
+        line, width=10, force=False, extended=False, languages=["english"]
+    )
+    assert parts == [line]
+
+    parts = split_line(
+        line, width=10, force=False, extended=False, languages=["german"]
+    )
+    assert parts == ["alpha", "dass beta"]
 
 
 def test_split_text_preserves_trailing_newline() -> None:
