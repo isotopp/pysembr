@@ -16,11 +16,12 @@ This repository contains `pysembr`, a Python command-line text filter. It reads 
 
 - Default line width: 75 characters.
 - Split priority:
-  1. Split at "." (highest priority).
+  1. Split at sentence punctuation (`.`, `!`, `?`) regardless of line length.
   2. If still too long, split at "," or other punctuation.
   3. If still too long, split at sentence-break words in English and German.
   4. If still too long and `--extended` is set, split at conjunctions/prepositions.
-- `--force` forces splits at "." even when the line is shorter than the width.
+- `--force` enables sentence-boundary splits for short lines (default).
+- `--no-force` disables sentence-boundary splits for short lines.
 - If stdin/stdout and file options are both provided, file options take precedence.
 
 ## CLI interface (expected)
@@ -28,7 +29,8 @@ This repository contains `pysembr`, a Python command-line text filter. It reads 
 - `--infile`, `-i`: Input file path. Otherwise read stdin.
 - `--outfile`, `-o`: Output file path. Otherwise write stdout.
 - `--width`, `-w`: Target line width (default 75).
-- `--force`, `-f`: Force sentence split at "." even below width.
+- `--force`, `-f`: Split at sentence punctuation regardless of line length (default).
+- `--no-force`: Disable sentence-boundary splits for short lines.
 - `--extended`, `-e`: Enable conjunction/preposition splitting.
 - `--languages`, `-l`: Comma-separated languages to enable (or `all`).
 - `--list-languages`: List available languages and exit.

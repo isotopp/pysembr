@@ -8,7 +8,8 @@ import sys
 from typing import Iterable, List, Sequence
 
 
-_PUNCTUATION = (",", ";", ":", "!", "?", "—", "–", "…", "/", ")")
+_PUNCTUATION = (",", ";", ":", "—", "–", "…", "/", ")")
+_SENTENCE_PUNCTUATION = (".", "!", "?")
 _CLOSING_QUOTES = ('"', "”", "’")
 _BREAK_WORDS_BY_LANGUAGE = {
     "english": (
@@ -129,11 +130,28 @@ _LANGUAGE_ALIASES = {
 }
 
 
-def _split_on_periods(text: str) -> List[str]:
+def _find_protected_spans(text: str) -> List[tuple[int, int]]:
+    spans: List[tuple[int, int]] = []
+    for match in re.finditer(r"!?\[[^\]]*\]\([^)]+\)", text):
+        spans.append((match.start(), match.end()))
+    return spans
+
+
+def _index_in_spans(index: int, spans: Sequence[tuple[int, int]]) -> bool:
+    return any(start <= index < end for start, end in spans)
+
+
+def _is_hyphenated_at(text: str, start: int, end: int) -> bool:
+    before = text[start - 1] if start > 0 else ""
+    after = text[end] if end < len(text) else ""
+    return before == "-" or after == "-"
+
+
+def _split_on_sentences(text: str, spans: Sequence[tuple[int, int]]) -> List[str]:
     parts: List[str] = []
     start = 0
     for index, char in enumerate(text):
-        if char == ".":
+        if char in _SENTENCE_PUNCTUATION and not _index_in_spans(index, spans):
             end = index + 1
             if end < len(text) and text[end] in _CLOSING_QUOTES:
                 end += 1
@@ -152,16 +170,19 @@ def _split_with_punctuation(text: str, width: int) -> List[str]:
     pieces: List[str] = []
     remaining = text
     while len(remaining) > width:
+        spans = _find_protected_spans(remaining)
         split_at = -1
         for index in range(min(width, len(remaining) - 1), -1, -1):
-            if remaining[index] in _PUNCTUATION:
+            if remaining[index] in _PUNCTUATION and not _index_in_spans(index, spans):
                 split_at = index + 1
                 if split_at < len(remaining) and remaining[split_at] in _CLOSING_QUOTES:
                     split_at += 1
                 break
         if split_at == -1:
             for index in range(width + 1, len(remaining)):
-                if remaining[index] in _PUNCTUATION:
+                if remaining[index] in _PUNCTUATION and not _index_in_spans(
+                    index, spans
+                ):
                     split_at = index + 1
                     if (
                         split_at < len(remaining)
@@ -180,15 +201,24 @@ def _split_with_punctuation(text: str, width: int) -> List[str]:
     return pieces
 
 
-def _split_with_break_words(text: str, width: int, words: Sequence[str]) -> List[str]:
+def _split_with_break_words(
+    text: str,
+    width: int,
+    words: Sequence[str],
+) -> List[str]:
     if len(text) <= width or not words:
         return [text]
     pattern = re.compile(rf"\b({'|'.join(map(re.escape, words))})\b", re.IGNORECASE)
     pieces: List[str] = []
     remaining = text
     while len(remaining) > width:
+        spans = _find_protected_spans(remaining)
         split_at = -1
         for match in pattern.finditer(remaining):
+            if _index_in_spans(match.start(), spans):
+                continue
+            if _is_hyphenated_at(remaining, match.start(), match.end()):
+                continue
             if 0 < match.start() <= width:
                 split_at = match.start()
             elif match.start() > width:
@@ -273,10 +303,9 @@ def split_line(
 
     enabled_languages = languages or list(_BREAK_WORDS_BY_LANGUAGE)
     base_words, conj_words = _collect_words(enabled_languages, extended)
-
     parts: List[str]
-    if force or len(line) > width:
-        parts = _split_on_periods(line)
+    if force:
+        parts = _split_on_sentences(line, _find_protected_spans(line))
     else:
         parts = [line]
 
@@ -350,8 +379,9 @@ def _parse_args(argv: Sequence[str]) -> argparse.Namespace:
     parser.add_argument(
         "-f",
         "--force",
-        action="store_true",
-        help="Split at '.' even when the line is shorter than width.",
+        action=argparse.BooleanOptionalAction,
+        default=True,
+        help="Split at sentence punctuation regardless of line length.",
     )
     parser.add_argument(
         "-e",

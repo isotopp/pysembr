@@ -5,11 +5,11 @@ pysembr is a small command-line filter that wraps long lines of text with simple
 ## What it does
 
 - Reads text from stdin or an input file.
-- Splits lines that exceed a target width (default 75 characters).
-- Prefers splitting at sentence boundaries (".").
+- Splits lines at sentence boundaries (`.`, `!`, `?`) by default.
 - If needed, splits at commas or other punctuation.
 - If punctuation is not enough, splits at sentence-break words (English and German).
 - If `--extended` is enabled, can also split at conjunctions/prepositions.
+- Avoids splitting inside Markdown links or images.
 
 ## Install
 
@@ -40,10 +40,10 @@ Adjust the wrapping width:
 pysembr --width 72
 ```
 
-Force a split at sentence boundaries even when the line is shorter than the width:
+Disable sentence-boundary splitting for short lines:
 
 ```bash
-pysembr --force
+pysembr --no-force
 ```
 
 Enable conjunction/preposition splitting:
@@ -69,7 +69,8 @@ pysembr --list-languages
 - `--infile` / `-i`: Input file path. If omitted, read from stdin.
 - `--outfile` / `-o`: Output file path. If omitted, write to stdout.
 - `--width` / `-w`: Target line width (default 75).
-- `--force` / `-f`: Split at "." even when lines are shorter than `--width`.
+- `--force` / `-f`: Split at sentence punctuation regardless of line length (default).
+- `--no-force`: Disable sentence-boundary splits for short lines.
 - `--extended` / `-e`: Split at conjunctions/prepositions when needed.
 - `--languages` / `-l`: Comma-separated languages to enable, or `all` (default).
 - `--list-languages`: List available languages and exit.
