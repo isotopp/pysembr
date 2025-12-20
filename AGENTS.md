@@ -2,7 +2,9 @@
 
 ## Purpose
 
-This repository contains `pysembr`, a Python command-line text filter. It reads text from stdin or a file and writes to stdout or a file, splitting lines based on punctuation and optional linguistic heuristics.
+This repository contains `pysembr`, a Python command-line text filter.
+It reads text from stdin or a file and writes to stdout or a file,
+splitting lines based on punctuation and optional linguistic heuristics.
 
 ## Project guidelines
 

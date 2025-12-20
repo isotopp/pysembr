@@ -20,10 +20,14 @@ stdout or for file-to-file processing.
 This project is managed by [uv](https://github.com/astral-sh/uv).
 
 1. Have `uv` installed.
-2. Clone the repository: 
+2. Clone the repository: `git clone https://github.com/isotopp/pysembr.git`
+3. Load the dependencies: `uv sync`
+4. Run it with `uv`: `uv run pysembr --help` or install it as a tool: `uv tool install .`
+
+If you run it as a tool, add `uv tool dir --bin` to the PATH in your shell:
+
 ```bash
-uv venv
-uv pip install -e .
+PATH="$PATH:`uv tool dir --bin`"
 ```
 
 ## Run
@@ -92,16 +96,19 @@ The first matching section is used, in order, and search stops:
 Example:
 
 ```ini
-[default]
+[/Users/kris/Source]
+extended = true
 width = 75
 force = true
 languages = english,german
 
-[/Users/kris/Source]
-extended = true
+[default]
+width = 75
+force = true
+languages = english,german
 ```
 
-## Planned options
+## Valid options
 
 - `--infile` / `-i`: Input file path. If omitted, read from stdin.
 - `--outfile` / `-o`: Output file path. If omitted, write to stdout.
@@ -114,6 +121,13 @@ extended = true
 - `--config-file` / `-c`: Config file path (overrides default search).
 - `--config-section` / `-s`: Config section name (overrides default selection).
 - `--show-options`: Print effective options and exit.
+
+## Use it in IntelliJ/PyCharm/WebStorm
+
+1. Install the 'Shellfilter' Plugin from Marketplace.
+2. Open Settings -> Tools -> Shellfilter Settings. 
+   In the Commands Section, add a Tool with `[+]`, name it `pysembr` and use the appropriate full path.
+3. Use Control+Command+I to run a shellfilter on the current selection. Select `pysembr`.
 
 ## Notes
 

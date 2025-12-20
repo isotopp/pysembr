@@ -41,17 +41,17 @@ def main(argv: Sequence[str] | None = None) -> None:
     args = parse_args(argv if argv is not None else sys.argv[1:])
     if args.show_options:
         config_path = args._config_path or "(none)"
-        config_section = args._config_section or "(none)"
+        config_section = args._config_section or "default"
         lines = [
-            f"config_file={config_path}",
-            f"config_section={config_section}",
-            f"infile={args.infile or ''}",
-            f"outfile={args.outfile or ''}",
-            f"width={args.width}",
-            f"force={args.force}",
-            f"extended={args.extended}",
-            f"languages={args.languages}",
-            f"list-languages={args.list_languages}",
+            f"# config_file={config_path}",
+            f"[{config_section}]",
+            f"  infile={args.infile or ''}",
+            f"  outfile={args.outfile or ''}",
+            f"  width={args.width}",
+            f"  force={args.force}",
+            f"  extended={args.extended}",
+            f"  languages={args.languages}",
+            f"  list-languages={args.list_languages}",
         ]
         sys.stdout.write("\n".join(lines) + "\n")
         return
