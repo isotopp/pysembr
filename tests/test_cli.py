@@ -1,6 +1,11 @@
 import textwrap
 
-from pysembr.cli import _maybe_fix_mojibake, split_line, split_text
+from pysembr.cli import (
+    _load_config_defaults,
+    _maybe_fix_mojibake,
+    split_line,
+    split_text,
+)
 
 
 def test_split_at_periods_when_over_width() -> None:
@@ -65,6 +70,12 @@ def test_no_force_keeps_short_sentence_together() -> None:
     assert parts == [line]
 
 
+def test_no_force_splits_long_sentence_line() -> None:
+    line = "alpha beta. gamma delta."
+    parts = split_line(line, width=10, force=False, extended=False)
+    assert parts == ["alpha beta.", "gamma delta."]
+
+
 def test_protect_markdown_links() -> None:
     line = "See [site](http://example.com/a.b). Next."
     parts = split_line(line, width=12, force=True, extended=False)
@@ -75,6 +86,28 @@ def test_no_split_inside_hyphenated_word() -> None:
     line = "alpha this-that beta"
     parts = split_line(line, width=10, force=True, extended=False)
     assert parts == [line]
+
+
+def test_config_defaults_first_match_wins(tmp_path, monkeypatch) -> None:
+    config = tmp_path / ".sembr"
+    config.write_text(
+        f"""[default]\nwidth = 70\n\n[{tmp_path}]\nwidth = 60\n""",
+        encoding="utf-8",
+    )
+    monkeypatch.chdir(tmp_path)
+    defaults = _load_config_defaults(str(tmp_path))
+    assert defaults["width"] == 70
+
+
+def test_config_defaults_path_section_applies(tmp_path, monkeypatch) -> None:
+    config = tmp_path / ".sembr"
+    config.write_text(
+        f"""[{tmp_path}]\nwidth = 60\n\n[default]\nwidth = 70\n""",
+        encoding="utf-8",
+    )
+    monkeypatch.chdir(tmp_path)
+    defaults = _load_config_defaults(str(tmp_path))
+    assert defaults["width"] == 60
 
 
 def test_split_text_preserves_trailing_newline() -> None:

@@ -64,6 +64,30 @@ List available languages:
 pysembr --list-languages
 ```
 
+## Configuration file
+
+Defaults can be set in a configparser file:
+
+- macOS/Linux: `./.sembr`, then `~/.sembr`
+- Windows: `.\sembr.ini`, then `%APPDATA%\sembr\sembr.ini`
+
+The first matching section is used, in order, and search stops:
+
+- A path section like `[/Users/kris/Source]` applies to any project under that path.
+- `[default]` applies if it appears first or when no path section matches.
+
+Example:
+
+```ini
+[default]
+width = 75
+force = true
+languages = english,german
+
+[/Users/kris/Source]
+extended = true
+```
+
 ## Planned options
 
 - `--infile` / `-i`: Input file path. If omitted, read from stdin.

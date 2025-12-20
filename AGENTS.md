@@ -35,6 +35,14 @@ This repository contains `pysembr`, a Python command-line text filter. It reads 
 - `--languages`, `-l`: Comma-separated languages to enable (or `all`).
 - `--list-languages`: List available languages and exit.
 
+## Configuration
+
+- Config file format: configparser.
+- macOS/Linux: `./.sembr`, then `~/.sembr`.
+- Windows: `.\sembr.ini`, then `%APPDATA%\sembr\sembr.ini`.
+- Sections: use `[default]` or a path section like `[/Users/kris/Source]`.
+- The first matching section (in order) is used and search stops.
+
 ## Coding standards
 
 - Use Python 3.11+ syntax unless project metadata specifies otherwise.
