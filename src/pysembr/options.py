@@ -108,7 +108,7 @@ def load_config_defaults(
         if width_value:
             defaults["width"] = int(width_value)
 
-        for key in ("force", "extended", "list-languages"):
+        for key in ("force", "extended", "list-languages", "front-matter"):
             value = _get_option(matched_section, key)
             if value is not None:
                 defaults[key] = _parse_bool(value)
@@ -191,6 +191,12 @@ def parse_args(argv: Sequence[str]) -> argparse.Namespace:
         action="store_true",
         default=config_defaults.get("list-languages", False),
         help="List available languages and exit.",
+    )
+    parser.add_argument(
+        "--front-matter",
+        action=argparse.BooleanOptionalAction,
+        default=config_defaults.get("front-matter", True),
+        help="Preserve leading YAML front matter (default: enabled).",
     )
     parser.add_argument(
         "--show-options",

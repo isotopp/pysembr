@@ -52,6 +52,7 @@ def main(argv: Sequence[str] | None = None) -> None:
             f"  extended={args.extended}",
             f"  languages={args.languages}",
             f"  list-languages={args.list_languages}",
+            f"  front-matter={args.front_matter}",
         ]
         sys.stdout.write("\n".join(lines) + "\n")
         return
@@ -63,7 +64,9 @@ def main(argv: Sequence[str] | None = None) -> None:
     except ValueError as exc:
         raise SystemExit(str(exc)) from exc
     text = _read_input(args.infile)
-    output = sembr.split_text(text, args.width, args.force, args.extended, languages)
+    output = sembr.split_text(
+        text, args.width, args.force, args.extended, languages, args.front_matter
+    )
     _write_output(args.outfile, output)
 
 

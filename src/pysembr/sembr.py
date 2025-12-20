@@ -347,6 +347,7 @@ def split_text(
     force: bool,
     extended: bool,
     languages: Sequence[str] | None = None,
+    front_matter: bool = True,
 ) -> str:
     """Split every line in a text block and return the resulting text.
 
@@ -354,6 +355,20 @@ def split_text(
     joined with newlines. A trailing newline is preserved if present in the
     input string.
     """
+    preserved_front_matter = ""
+    if front_matter:
+        lines_with_endings = text.splitlines(keepends=True)
+        if lines_with_endings:
+            first_line = lines_with_endings[0].strip("\r\n")
+            if first_line == "---":
+                for index, line in enumerate(lines_with_endings[1:], start=1):
+                    if line.strip("\r\n") == "---":
+                        preserved_front_matter = "".join(
+                            lines_with_endings[: index + 1]
+                        )
+                        text = "".join(lines_with_endings[index + 1 :])
+                        break
+
     lines = text.splitlines()
     ends_with_newline = text.endswith("\n")
     output: List[str] = []
@@ -362,4 +377,6 @@ def split_text(
     result = "\n".join(output)
     if ends_with_newline:
         result += "\n"
+    if preserved_front_matter:
+        return f"{preserved_front_matter}{result}"
     return result

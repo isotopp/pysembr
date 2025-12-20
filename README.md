@@ -12,6 +12,7 @@ stdout or for file-to-file processing.
 - Splits lines at sentence boundaries (`.`, `!`, `?`) by default when followed by whitespace.
 - If needed, splits at commas or other punctuation.
 - If punctuation is not enough, splits at sentence-break words (English and German).
+- Leaves YAML front matter (starting with `---` on the first line) untouched.
 - If `--extended` is enabled, can also split at conjunctions/prepositions.
 - Avoids splitting inside Markdown links or images.
 
@@ -120,6 +121,7 @@ languages = english,german
 - `--list-languages`: List available languages and exit.
 - `--config-file` / `-c`: Config file path (overrides default search).
 - `--config-section` / `-s`: Config section name (overrides default selection).
+- `--front-matter` / `--no-front-matter`: Preserve or format leading YAML front matter (default: preserve).
 - `--show-options`: Print effective options and exit.
 
 ## Use it in IntelliJ/PyCharm/WebStorm

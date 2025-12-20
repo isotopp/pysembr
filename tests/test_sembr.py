@@ -103,3 +103,48 @@ def test_split_text_multiple_lines() -> None:
         "eins zwei drei,",
         "vier funf",
     ]
+
+
+def test_split_text_skips_front_matter() -> None:
+    text = textwrap.dedent(
+        """\
+        ---
+        title: "pysembr"
+        date: "2025-12-20T05:06:07Z"
+        tags:
+        - lang_en
+        ---
+
+        alpha beta. gamma delta.
+        """
+    )
+    result = split_text(text, width=12, force=True, extended=False)
+    assert result.splitlines() == [
+        "---",
+        'title: "pysembr"',
+        'date: "2025-12-20T05:06:07Z"',
+        "tags:",
+        "- lang_en",
+        "---",
+        "",
+        "alpha beta.",
+        "gamma delta.",
+    ]
+
+
+def test_split_text_can_format_front_matter() -> None:
+    text = textwrap.dedent(
+        """\
+        ---
+        summary: "alpha beta. gamma delta."
+        ---
+        """
+    )
+    result = split_text(text, width=12, force=True, extended=False, front_matter=False)
+    assert result.splitlines() == [
+        "---",
+        "summary:",
+        '"alpha beta.',
+        'gamma delta."',
+        "---",
+    ]
