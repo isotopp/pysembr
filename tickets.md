@@ -508,6 +508,20 @@ errors. Full `uv run pytest`: 43 passed on Python 3.14.2; Ruff format/check and
 
 **Depends on:** T15. **Unblocks:** Release review.
 
+**Status:** Tooling slice Done by explicit user request ahead of T15. Package
+version is 2.0.0 through `uv version`; installed reporting reads metadata.
+Development tooling uses ty instead of mypy, bumpver was removed, and the
+build backend is `uv_build>=0.9.27,<0.10` without setuptools configuration.
+Final README, delivered-backlog reconciliation, formatting installation checks,
+and final-tree gates remain pending after T15; T16 is not yet complete.
+
+**Tooling validation:** Installed-version TDD red/green, full suite 156 passed,
+Ruff format/check, and `uv run ty check src tests` passed on Python 3.14.2.
+`uv build` produced wheel/sdist with exact approved language resources; the
+wheel installed into a clean Python 3.14 environment and reported 2.0.0.
+The bounded backend minor range follows [Astral build-backend guidance](https://docs.astral.sh/uv/concepts/build-backend/).
+No release tag, push, or publication was performed.
+
 ### Tasks
 
 - Replace outdated README content with the final behavior, CLI, configuration,
@@ -536,7 +550,7 @@ errors. Full `uv run pytest`: 43 passed on Python 3.14.2; Ruff format/check and
   deterministic, focused, and pipeline-friendly.
 - Run the full repository gates for each completed implementation change:
   `uv run pytest`, `uv run ruff format src tests`,
-  `uv run ruff check --fix src tests`, and `uv run mypy src`.
+  `uv run ruff check --fix src tests`, and `uv run ty check src tests`.
 - Record completion evidence and any remaining limitations in the ticket.
 - Do not mark a ticket complete while a prerequisite or its acceptance
   criteria remain unresolved.

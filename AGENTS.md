@@ -40,6 +40,8 @@ mapping independently with appropriate regression tests.
   interpreter to 3.14 with uv.
 - Add/remove dependencies with `uv add` / `uv remove`.
 - Generate lockfile changes with `uv lock`; never edit `uv.lock` by hand.
+- Set release versions with `uv version <version>`; installed version reporting
+  reads distribution metadata. Build wheel/sdist artifacts with `uv build`.
 - Keep the installed `pysembr` entry point usable and use pytest for fresh tests.
 - Update README when implementation changes the public CLI or behavior. Keep
   help text and examples short and consistent with the confirmed contract.
@@ -50,4 +52,4 @@ mapping independently with appropriate regression tests.
 - Always run the full suite: `uv run pytest`.
 - Format: `uv run ruff format src tests`.
 - Lint: `uv run ruff check --fix src tests`.
-- Type-check: `uv run mypy src`.
+- Type-check source and tests: `uv run ty check src tests`.

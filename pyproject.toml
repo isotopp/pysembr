@@ -1,6 +1,6 @@
 [project]
 name = "pysembr"
-version = "1.0.4"
+version = "2.0.0"
 description = "Markdown-aware semantic line breaking."
 readme = "README.md"
 requires-python = ">=3.14"
@@ -19,34 +19,11 @@ package = true
 
 [dependency-groups]
 dev = [
-    "bumpver>=2025.1131",
-    "mypy>=1.19.1",
     "pytest>=9.0.2",
     "ruff>=0.14.10",
-]
-
-[tool.bumpver]
-current_version = "1.0.4"
-version_pattern = "MAJOR.MINOR.PATCH"
-commit = true
-tag = true
-commit_message = "bump version {old_version} -> {new_version}"
-tag_message = "{new_version}"
-tag_scope = "default"
-pre_commit_hook = ""
-post_commit_hook = ""
-
-[tool.bumpver.file_patterns]
-"pyproject.toml" = [
-    'version = "{version}"',
+    "ty>=0.0.84",
 ]
 
 [build-system]
-requires = ["setuptools>=77"]
-build-backend = "setuptools.build_meta"
-
-[tool.setuptools.packages.find]
-where = ["src"]
-
-[tool.setuptools.package-data]
-pysembr = ["languages.json"]
+requires = ["uv_build>=0.9.27,<0.10"]
+build-backend = "uv_build"

@@ -24,7 +24,7 @@ uv run pysembr --help
 uv run pytest
 uv run ruff format src tests
 uv run ruff check --fix src tests
-uv run mypy src
+uv run ty check src tests
 ```
 
 The development interpreter is pinned to Python 3.14. The selected Markdown
