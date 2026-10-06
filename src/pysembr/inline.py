@@ -1,8 +1,8 @@
 """Capture original inline boundaries while parser rules consume source."""
 
+import re
 from dataclasses import replace
 from html.parser import HTMLParser
-import re
 
 from markdown_it import MarkdownIt
 from markdown_it.parser_inline import RuleFuncInlineType

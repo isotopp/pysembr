@@ -2,9 +2,9 @@
 
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Literal, TypeAlias
+from typing import Literal
 
-SplitMode: TypeAlias = Literal["sentences", "punctuation", "words"]
+type SplitMode = Literal["sentences", "punctuation", "words"]
 
 
 @dataclass(frozen=True)

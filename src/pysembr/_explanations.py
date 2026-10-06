@@ -70,6 +70,7 @@ def explain_output(
     order = [
         "protected-block",
         "protected-inline",
+        "sentence-mode",
         "no-boundary",
         "overflow",
         "connector-repair",
@@ -225,6 +226,17 @@ def _event_diagnostics(
                             width=widths[line],
                         )
                     )
+        elif event.reason == "sentence-mode":
+            for line in range(first, last + 1):
+                if widths[line] > width and line not in rejected_lines:
+                    diagnostics.append(
+                        Diagnostic(
+                            line + 1,
+                            event.reason,
+                            "Sentence mode keeps this sentence whole; internal splitting is disabled.",
+                            width=widths[line],
+                        )
+                    )
         elif event.reason == "connector-repair":
             if first == last and widths[first] <= width:
                 diagnostics.append(
@@ -259,13 +271,14 @@ def _event_diagnostics(
                         )
                     )
         elif event.reason == "no-boundary":
+            reason = event.message or "no eligible semantic boundary remains."
             for line in range(first, last + 1):
                 if widths[line] > width and line not in rejected_lines:
                     diagnostics.append(
                         Diagnostic(
                             line + 1,
                             event.reason,
-                            f"{widths[line]} characters exceed width {width}; no eligible semantic boundary remains.",
+                            f"{widths[line]} characters exceed width {width}; {reason}",
                             width=widths[line],
                         )
                     )

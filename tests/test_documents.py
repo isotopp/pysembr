@@ -1,10 +1,11 @@
-import re
 import codecs
-from pathlib import Path
+import re
 from collections.abc import Sequence
 from html.parser import HTMLParser
+from pathlib import Path
 
 import pytest
+from conftest import CliRunner
 from markdown_it import MarkdownIt
 from markdown_it.common.utils import escapeHtml
 from markdown_it.renderer import RendererHTML
@@ -14,8 +15,6 @@ from mdit_py_plugins.deflist import deflist_plugin
 from mdit_py_plugins.dollarmath import dollarmath_plugin
 from mdit_py_plugins.footnote import footnote_plugin
 from mdit_py_plugins.front_matter import front_matter_plugin
-
-from conftest import CliRunner
 
 from pysembr.formatter import format_text
 from pysembr.models import Options

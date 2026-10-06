@@ -1,10 +1,10 @@
 """Public formatting examples for the reviewed lexical inventories."""
 
 import pytest
+from test_documents import render_meaning
 
 from pysembr.formatter import format_text
 from pysembr.models import Options
-from test_documents import render_meaning
 
 
 @pytest.mark.parametrize(

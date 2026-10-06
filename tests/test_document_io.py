@@ -6,8 +6,8 @@ from pathlib import Path
 from typing import Any, BinaryIO, Self
 
 import pytest
-
 from conftest import CliRunner
+
 from pysembr.cli import main
 
 

@@ -3,9 +3,9 @@
 import json
 import re
 from dataclasses import dataclass
+from importlib.resources import files
 
 from .models import Options
-from importlib.resources import files
 
 _DATA = json.loads(
     files("pysembr").joinpath("languages.json").read_text(encoding="utf-8")
