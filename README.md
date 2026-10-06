@@ -58,8 +58,10 @@ Sentences split at `.`, `!`, or `?` clusters, with adjacent closing quotes and
 brackets kept on the preceding line. Decimal points, selected abbreviations,
 initial sequences, and protected inline punctuation do not create boundaries.
 Abbreviations at apparent sentence ends remain an acknowledged ambiguity;
-heuristics conservatively avoid splitting there. No NLP or language detection
-is used.
+heuristics conservatively avoid splitting there. English `St.` keeps `St. Marx`
+together, but can also suppress a real ending such as `Oak St. Next ...`.
+Language selection and replacement abbreviation lists control recognition.
+No NLP or language detection is used.
 
 For each overlong sentence/segment, try these categories in order:
 
@@ -130,9 +132,11 @@ this is not a cross-engine or browser-layout guarantee. Formatting is idempotent
 Canonical languages are `english` and `german`. Aliases are `en`, `eng`, `de`,
 `deu`, and `ger`, case-insensitive; selections are deduplicated in canonical
 order. `all` enables both. Word matches use Unicode casefold and whole words,
-excluding parts of hyphenated words and protected spans. The exact approved
-[shipped inventories and aliases](developer/2026-10-06-version-2/language-data-v2.json)
-are packaged unchanged, including their spellings and abbreviation entries.
+excluding parts of hyphenated words and protected spans. The approved
+[original inventories and aliases](developer/2026-10-06-version-2/language-data-v2.json)
+form the baseline. The reviewed English `St.` addition is documented in the
+[abbreviation review](developer/2026-10-06-semantic-wrapping-improvements/abbreviation-review.md);
+other abbreviation entries and spellings are retained.
 
 Configuration uses `configparser` INI with literal values (no interpolation).
 Search `./.sembr`, then `~/.sembr` on macOS/Linux. Windows searches

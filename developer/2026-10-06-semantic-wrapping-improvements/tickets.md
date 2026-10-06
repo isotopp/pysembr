@@ -208,7 +208,7 @@ algorithm stabilizes, preventing vocabulary changes from obscuring T02/T04.
 
 ## T06: Fix the demonstrated abbreviation boundary conservatively
 
-**Status:** Todo. **Dependencies:** T01. **Story:** US-04.
+**Status:** Done. **Dependencies:** T01. **Story:** US-04.
 
 ### Work
 
@@ -225,6 +225,17 @@ algorithm stabilizes, preventing vocabulary changes from obscuring T02/T04.
 
 - `St. Marx` remains together and existing recognition controls are preserved.
 - Quality gates pass; no general abbreviation inference or NLP is introduced.
+
+### Completion evidence
+
+- Added only English `St.`; recorded useful/adverse English and independent
+  German evidence in [abbreviation-review.md](abbreviation-review.md).
+- Public sentence tests isolate the Mozart correction from width algorithms
+  and cover casing, selected languages, replacement overrides, true-ending
+  ambiguity, existing protected spans, initials, decimals, clusters, and quotes.
+- Updated the current Mozart golden for the abbreviation change only; the
+  historical audit and epic baseline remain intact.
+- Full suite: 255 tests passed; Ruff format/check and `ty check src tests` passed.
 
 ### Parallel integration note
 

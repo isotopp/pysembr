@@ -120,3 +120,85 @@ def test_configured_abbreviations_use_unicode_casefold():
 )
 def test_german_closing_quotes_and_hard_breaks(source, expected):
     assert format_paragraph(parse_document(source).paragraphs[0], Options()) == expected
+
+
+def test_mozart_st_marx_is_not_a_sentence_boundary():
+    source = "He was buried in a common grave at the St. Marx cemetery. Next."
+    options = Options(width=999, languages=("english",), word_splitting=False)
+    assert (
+        format_paragraph(parse_document(source).paragraphs[0], options)
+        == "He was buried in a common grave at the St. Marx cemetery.\nNext."
+    )
+
+
+@pytest.mark.parametrize(
+    "source,options,expected",
+    [
+        (
+            "st. Marx remains. Next.",
+            Options(width=999, languages=("english",)),
+            "st. Marx remains.\nNext.",
+        ),
+        (
+            "St. Marx bleibt. Danach.",
+            Options(width=999, languages=("german",)),
+            "St.\nMarx bleibt.\nDanach.",
+        ),
+        (
+            "St. Marx remains. Next.",
+            Options(
+                width=999,
+                languages=("english",),
+                vocabulary_overrides={"abbreviations-english": ()},
+            ),
+            "St.\nMarx remains.\nNext.",
+        ),
+        (
+            "St. Marx bleibt. Danach.",
+            Options(
+                width=999,
+                languages=("german",),
+                vocabulary_overrides={"abbreviations-german": ("ST.",)},
+            ),
+            "St. Marx bleibt.\nDanach.",
+        ),
+        (
+            "He lives on Oak St. Next he leaves. Done.",
+            Options(width=999, languages=("english",)),
+            "He lives on Oak St. Next he leaves.\nDone.",
+        ),
+        (
+            '"St. Marx" is the name. "Ready?!" Next.',
+            Options(width=999),
+            '"St. Marx" is the name.\n"Ready?!"\nNext.',
+        ),
+        (
+            "J. R. Smith paid 3.50 at St. Marx. Next.",
+            Options(width=999),
+            "J. R. Smith paid 3.50 at St. Marx.\nNext.",
+        ),
+        (
+            "Read `St. Next.` and [St. Marx](https://example.org). Done.",
+            Options(width=999),
+            "Read `St. Next.` and [St. Marx](https://example.org).\nDone.",
+        ),
+        (
+            "Best. Marx remains. Next.",
+            Options(width=999, languages=("english",)),
+            "Best.\nMarx remains.\nNext.",
+        ),
+        (
+            "Prof. Mozart sprach. Danach ging er.",
+            Options(width=999, languages=("german",)),
+            "Prof. Mozart sprach.\nDanach ging er.",
+        ),
+    ],
+)
+def test_reviewed_abbreviation_preserves_language_controls_and_existing_rules(
+    source, options, expected
+):
+    formatted = format_paragraph(parse_document(source).paragraphs[0], options)
+    assert formatted == expected
+    assert (
+        format_paragraph(parse_document(formatted).paragraphs[0], options) == expected
+    )
