@@ -1,138 +1,31 @@
 # pysembr
 
-pysembr is a small command-line filter
-that wraps long lines of text with simple,
-punctuation-aware splitting rules.
-It is intended for piping text through stdin/
-stdout or for file-to-file processing.
+pysembr is being rewritten for version 2.0.0 as a Markdown-aware semantic
+line-breaking command. The implementation requires Python 3.14 or newer.
 
-## What it does
+The confirmed behavior is specified in [design-v2.md](design-v2.md), acceptance
+criteria in [user-stories.md](user-stories.md), and delivery order in
+[tickets.md](tickets.md).
 
-- Reads text from stdin or an input file.
-- Splits lines at sentence boundaries (`.`, `!`, `?`) by default when followed by whitespace.
-- If needed, splits at commas or other punctuation.
-- If punctuation is not enough, splits at sentence-break words (English and German).
-- Leaves YAML front matter (starting with `---` on the first line) untouched.
-- If `--extended` is enabled, can also split at conjunctions/prepositions.
-- Avoids splitting inside Markdown links or images.
+## Current implementation stage
 
-## Install
+T04 replaces all legacy source and tests with typed source, paragraph, options,
+and replacement models, source-preserving splicing, and an installed command
+scaffold. `pysembr --help` and `pysembr --version` work. Formatting currently
+returns an explicit error; subsequent tickets implement and wire it.
+Package version metadata remains the prior version until release preparation
+in T16. The old behavior is recoverable from Git history.
 
-This project is managed by [uv](https://github.com/astral-sh/uv).
-
-1. Have `uv` installed.
-2. Clone the repository: `git clone https://github.com/isotopp/pysembr.git`
-3. Load the dependencies: `uv sync`
-4. Run it with `uv`: `uv run pysembr --help` or install it as a tool: `uv tool install .`
-
-If you run it as a tool, add `uv tool dir --bin` to the PATH in your shell:
+## Development
 
 ```bash
-PATH="$PATH:`uv tool dir --bin`"
+uv sync
+uv run pysembr --help
+uv run pytest
+uv run ruff format src tests
+uv run ruff check --fix src tests
+uv run mypy src
 ```
 
-## Run
-
-Filter from stdin to stdout:
-
-```bash
-cat input.txt | pysembr
-```
-
-Use files instead of stdin/stdout:
-
-```bash
-pysembr -i input.txt -o output.txt
-```
-
-Adjust the wrapping width:
-
-```bash
-pysembr --width 72
-```
-
-Disable sentence-boundary splitting for short lines:
-
-```bash
-pysembr --no-force
-```
-
-Enable conjunction/preposition splitting:
-
-```bash
-pysembr --extended
-```
-
-Limit to a subset of languages:
-
-```bash
-pysembr --languages english,german
-```
-
-List available languages:
-
-```bash
-pysembr --list-languages
-```
-
-Show effective options and config selection:
-
-```bash
-pysembr --show-options
-```
-
-## Configuration file
-
-Defaults can be set in a configparser file:
-
-- macOS/Linux: `./.sembr`, then `~/.sembr`
-- Windows: `.\sembr.ini`, then `%APPDATA%\sembr\sembr.ini`
-- Or specify a custom file/section with `--config-file` / `--config-section`.
-
-The first matching section is used, in order, and search stops:
-
-- A path section like `[/Users/kris/Source]` applies to any project under that path.
-- `[default]` applies if it appears first or when no path section matches.
-
-Example:
-
-```ini
-[/Users/kris/Source]
-extended = true
-width = 75
-force = true
-languages = english,german
-
-[default]
-width = 75
-force = true
-languages = english,german
-```
-
-## Valid options
-
-- `--infile` / `-i`: Input file path. If omitted, read from stdin.
-- `--outfile` / `-o`: Output file path. If omitted, write to stdout.
-- `--width` / `-w`: Target line width (default 75).
-- `--force` / `-f`: Split at sentence punctuation regardless of line length (default).
-- `--no-force`: Disable sentence-boundary splits for short lines.
-- `--extended` / `-e`: Split at conjunctions/prepositions when needed.
-- `--languages` / `-l`: Comma-separated languages to enable, or `all` (default).
-- `--list-languages`: List available languages and exit.
-- `--config-file` / `-c`: Config file path (overrides default search).
-- `--config-section` / `-s`: Config section name (overrides default selection).
-- `--front-matter` / `--no-front-matter`: Preserve or format leading YAML front matter (default: preserve).
-- `--version`: Print the version and exit.
-- `--show-options`: Print effective options and exit.
-
-## Use it in IntelliJ/PyCharm/WebStorm
-
-1. Install the 'Shellfilter' Plugin from Marketplace.
-2. Open Settings -> Tools -> Shellfilter Settings. 
-   In the Commands Section, add a Tool with `[+]`, name it `pysembr` and use the appropriate full path.
-3. Use Control+Command+I to run a shellfilter on the current selection. Select `pysembr`.
-
-## Notes
-
-- If no suitable split point is found and `--extended` is not enabled, long lines may remain longer than the target width.
-- When both stdin/stdout and files are provided, file options should take precedence.
+The development interpreter is pinned to Python 3.14. The selected Markdown
+parser dependencies are markdown-it-py 4.2.0 and mdit-py-plugins 0.6.1.
