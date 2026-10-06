@@ -69,17 +69,23 @@ def test_options_inspection_reports_effective_values_and_selected_config(
     tmp_path: Path,
 ):
     config = tmp_path / ".sembr"
-    config.write_text("[default]\nwidth = 30\nlanguages = de\nextended = false\n")
+    config.write_text("[default]\nwidth = 30\nlanguages = de\nsplit-mode = comma\n")
     result = run_cli("--show-options", "--width", "40", "--infile", "missing")
     assert result.returncode == 0
     values = json.loads(result.stdout)
     assert values["width"] == 40
     assert values["languages"] == ["german"]
-    assert values["extended"] is False
+    assert values["split_mode"] == "punctuation"
+    assert "extended" not in values and "word_splitting" not in values
     assert values["config_file"] == str(config)
     assert values["config_section"] == "default"
     assert values["infile"] == "missing"
     assert result.stderr == b""
+
+    alias = run_cli("--show-options", "--split-mode", "comma")
+    assert alias.returncode == 0
+    assert json.loads(alias.stdout)["split_mode"] == "punctuation"
+    assert alias.stderr == b""
 
 
 def test_missing_input_is_a_clean_runtime_diagnostic(run_cli: CliRunner):
@@ -213,14 +219,9 @@ def test_same_file_replacement_retains_encoding_bom_and_final_newline(
             b"Hallo Welt\nund mehr Worte.",
         ),
         (
-            ["-w", "12", "--no-word-splitting"],
+            ["-w", "12", "--split-mode", "punctuation"],
             b"Hello world and more words.",
             b"Hello world and more words.",
-        ),
-        (
-            ["-w", "12", "--no-extended", "-l", "en"],
-            b"Hello world with more words.",
-            b"Hello world with more words.",
         ),
         (
             ["-w", "12", "-l", "en"],
@@ -284,12 +285,12 @@ def test_cli_configuration_precedence_is_applied_to_formatting(
     tmp_path: Path,
 ):
     (tmp_path / ".sembr").write_text(
-        "[default]\nwidth=12\nlanguages=en\nword-splitting=false\n"
+        "[default]\nwidth=12\nlanguages=en\nsplit-mode=punctuation\n"
     )
     unchanged = run_cli(input=b"Hello world and more words.")
     assert unchanged.returncode == 0
     assert unchanged.stdout == b"Hello world and more words."
-    changed = run_cli("--word-splitting", input=b"Hello world and more words.")
+    changed = run_cli("--split-mode", "words", input=b"Hello world and more words.")
     assert changed.returncode == 0
     assert changed.stdout == b"Hello world\nand more words."
     assert changed.stderr == unchanged.stderr == b""

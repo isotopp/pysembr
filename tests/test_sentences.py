@@ -124,7 +124,7 @@ def test_german_closing_quotes_and_hard_breaks(source, expected):
 
 def test_mozart_st_marx_is_not_a_sentence_boundary():
     source = "He was buried in a common grave at the St. Marx cemetery. Next."
-    options = Options(width=999, languages=("english",), word_splitting=False)
+    options = Options(width=999, languages=("english",), split_mode="punctuation")
     assert (
         format_paragraph(parse_document(source).paragraphs[0], options)
         == "He was buried in a common grave at the St. Marx cemetery.\nNext."

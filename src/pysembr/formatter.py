@@ -87,7 +87,7 @@ def _segment_paragraph(
         sentence_start = start
         sentence_prefix = prefix
         internal: list[tuple[int, int]] = []
-        while (
+        while options.split_mode != "sentences" and (
             _source_width(
                 prefix + text[start:end], marker_width if end == len(text) else 0
             )
@@ -101,11 +101,8 @@ def _segment_paragraph(
                         for match in re.compile(pattern).finditer(text, start, end)
                     ]
                 )
-            if options.word_splitting:
-                for words in (
-                    data.conjunctions,
-                    data.split_words if options.extended else (),
-                ):
+            if options.split_mode == "words":
+                for words in (data.conjunctions, data.split_words):
                     candidates = []
                     for position in word_boundaries(text, words):
                         if any(

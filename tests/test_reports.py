@@ -15,7 +15,11 @@ def test_report_explains_actual_overflow_and_terminal_no_boundary():
     source = (
         "This relationship would fester for eight years before breaking apart entirely."
     )
-    options = Options(width=40, extended=False)
+    options = Options(
+        width=40,
+        languages=("english",),
+        vocabulary_overrides={"split-words-english": ()},
+    )
     report = format_report(source, options)
     assert report.text == (
         "This relationship would fester for eight years\n"
@@ -127,7 +131,7 @@ def test_exact_fit_sentence_pairs_include_full_emitted_task_prefixes():
 
 def test_custom_and_disabled_terms_are_explained_without_guessing_boundaries():
     source = "Long prose with more words."
-    disabled = format_report(source, Options(width=12, word_splitting=False))
+    disabled = format_report(source, Options(width=12, split_mode="punctuation"))
     assert disabled.text == source
     assert [(d.line, d.reason) for d in disabled.diagnostics] == [(1, "no-boundary")]
     overridden = format_report(
@@ -143,7 +147,7 @@ def test_custom_and_disabled_terms_are_explained_without_guessing_boundaries():
     )
     assert overridden == disabled
     unsafe = format_report(
-        "Verylongprefix, ---", Options(width=4, word_splitting=False)
+        "Verylongprefix, ---", Options(width=4, split_mode="punctuation")
     )
     assert unsafe.text == "Verylongprefix, ---"
     assert [(d.line, d.reason, d.width) for d in unsafe.diagnostics] == [
