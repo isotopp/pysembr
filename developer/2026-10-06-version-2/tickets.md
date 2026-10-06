@@ -3,8 +3,8 @@
 Epic: [user-stories.md](user-stories.md).
 
 Tickets are listed in implementation order. Dependencies are completion
-prerequisites, not just related work. T01-T03 are **Done** (confirmed 2026-10-06);
-T04-T16 remain **To do**.
+prerequisites, not just related work. **T01-T16 are Done.** T01-T03 were
+confirmed on 2026-10-06; implementation and release validation are complete.
 The decision tickets resolve the epic's open questions; they do not reopen
 agreed behavior. No implementation is authorized by the existence of this
 backlog alone.
@@ -123,7 +123,7 @@ The pinned-version [probe](parser-probe.py) passed: 10 selected paragraphs,
 8 source splices, nested list/definition columns, protected source gaps,
 inline rule offsets, token structure, and rendered-output checks.
 T02 and the markdown-it-py/mdit-py-plugins selection are confirmed.
-Production multiline source mapping remains T07 work; the probe is not a
+Production multiline source mapping was completed in T07; the probe is not a
 finished formatter or proof of all later acceptance criteria.
 
 ### Tasks
@@ -229,7 +229,7 @@ ranges, markers (including native task checkboxes), indentation columns,
 ancestor contexts, line endings, and logical-to-original character offsets.
 Source gaps preserve all protected blocks and blank lines without rendering.
 NUL-affected or ambiguous prose mappings remain untouched. Inline protection
-and safe-boundary validation remain T07 work.
+and safe-boundary validation were subsequently completed in T07.
 
 **Validation:** TDD red/green cycles at `parse_document` and source-splice seams
 caught partially consumed tabs and native checkbox physical-line origins.
@@ -301,7 +301,7 @@ terminal punctuation clusters and ASCII/English/German closing quotes/brackets.
 Selected/configured abbreviations use Unicode casefold with original offsets;
 initial sequences are conservative. Protected inline source, hard-break markers,
 non-ASCII whitespace, unsafe line starts, prefixes, and terminators are retained.
-Soft-wrap normalization and full structural validation remain T10 work.
+Soft-wrap normalization and full structural validation were completed in T10.
 
 **Validation:** Public formatter TDD red/green cycles with full `uv run pytest`
 every cycle; final suite 125 passed on Python 3.14.2. Ruff format/check and mypy
@@ -588,19 +588,30 @@ browser-rendering proof; final documentation/artifact installation remain T16.
 
 **Depends on:** T15. **Unblocks:** Release review.
 
-**Status:** Tooling slice Done by explicit user request ahead of T15. Package
-version is 2.0.0 through `uv version`; installed reporting reads metadata.
-Development tooling uses ty instead of mypy, bumpver was removed, and the
-build backend is `uv_build>=0.9.27,<0.10` without setuptools configuration.
-Final README, delivered-backlog reconciliation, formatting installation checks,
-and final-tree gates remain pending after T15; T16 is not yet complete.
+**Status:** Done. README documents delivered 2.0.0 behavior, CLI/configuration,
+Markdown profile and safety limits, languages, encodings/endings, atomic output,
+migration, and uv/ty development. Epic/design/backlog and agent instructions
+reflect completed implementation. Version reporting is metadata-based and its
+regression test compares installed output to project metadata, allowing future
+`uv version` changes without editing frozen expectations.
 
-**Tooling validation:** Installed-version TDD red/green, full suite 156 passed,
-Ruff format/check, and `uv run ty check src tests` passed on Python 3.14.2.
-`uv build` produced wheel/sdist with exact approved language resources; the
-wheel installed into a clean Python 3.14 environment and reported 2.0.0.
-The bounded backend minor range follows [Astral build-backend guidance](https://docs.astral.sh/uv/concepts/build-backend/).
-No release tag, push, or publication was performed.
+**Validation:** Full `uv run pytest` (243 passed), Ruff format/check,
+`uv run ty check src tests`, and `uv lock --check` pass on Python 3.14.2.
+`uv build --no-sources` produced wheel and sdist in repository `dist/`; exact
+packaged language JSON matches the approved inventory. Both the wheel and
+rebuilt sdist installed into separate clean Python 3.14 environments and
+reported 2.0.0. Installed commands verified README pipeline/list examples,
+width/language selection, separate files, same-file replacement and temporary
+cleanup, config discovery/inspection/explicit selection, Latin-1, and UTF-16
+BOM/CRLF preservation. Configuration homes were isolated for verification;
+existing user configuration was not changed.
+
+**Earlier tooling evidence:** The user authorized this slice ahead of T15:
+`uv version` set 2.0.0, ty replaced mypy, bumpver was removed, and the backend
+became `uv_build>=0.9.27,<0.10`. Initial version TDD red/green and 156-test suite
+passed. The bounded backend follows
+[Astral build-backend guidance](https://docs.astral.sh/uv/concepts/build-backend/).
+No tag, push, or publication was performed; artifacts are ready for review.
 
 ### Tasks
 

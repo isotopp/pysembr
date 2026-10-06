@@ -14,7 +14,7 @@ boundaries without changing the wording or Markdown structure.
 ## Scope and decision status
 
 - Target release: 2.0.0. Backward compatibility is not required.
-- Target Python 3.14+. T04 deletes all legacy source and tests and creates fresh
+- Target Python 3.14+. T04 deleted all legacy source and tests and created fresh
   modules/tests from the confirmed contract. Approved language data is preserved
   in [language-data-v2.json](language-data-v2.json); legacy implementation and
   tests are not reference specifications. Documentation is replaced as needed.
@@ -36,7 +36,7 @@ boundaries without changing the wording or Markdown structure.
   empty output. Extra file metadata/concurrency/durability handling is excluded.
 - Prefer an external Markdown parser and adopt its configured syntax.
   The concrete contract and parser selection were confirmed on 2026-10-06 in
-  [design-v2.md](design-v2.md); production implementation has not started.
+  [design-v2.md](design-v2.md); T01-T16 are complete and the 2.0.0 artifacts are ready for review.
 
 ## US-01: Use the formatter in a pipeline
 
@@ -325,15 +325,17 @@ for an external parser, and exclusion of extra file-semantics handling.
 - **Parser/dialect:** Use markdown-it-py plus mdit-py-plugins, CommonMark
   with tables, native task lists, colon/tilde definitions, YAML front matter,
   footnotes, and dollar math. Source-preserving adapter feasibility is probed;
-  full implementation is deferred to the corresponding tickets.
+  production mapping and structural validation are implemented and tested.
 - **Spacing/width/safety:** Use the specified normalization, tab/content columns,
   consumed-width behavior, hard-break treatment, inline protection, and
   rejection of breaks introducing unintended Markdown structure.
 - **Text I/O:** Use BOM detection, UTF-8 fallback, explicit codecs for other
   BOM-less encodings, paragraph-based newline preservation, and BOM-only input.
 
-T01-T03 are Done. T04-T16 remain To do; T04 is unblocked and starts by replacing
-all legacy source/tests and setting the Python 3.14+ target.
+T01-T16 are Done. Acceptance coverage is recorded in
+[tests/README.md](../../tests/README.md); release artifacts were built and
+installed in clean Python 3.14 environments. Tagging, pushing, and publishing
+remain separate release actions.
 
 ## References
 
