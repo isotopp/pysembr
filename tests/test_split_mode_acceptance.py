@@ -1,12 +1,11 @@
 """Public acceptance examples for sentence-only and punctuation-only modes."""
 
 import pytest
-
 from conftest import CliRunner
-from pysembr.formatter import format_text
-from pysembr.models import Options, SplitMode
 from test_documents import render_meaning
 
+from pysembr.formatter import format_text
+from pysembr.models import Options, SplitMode
 
 STORY_SOURCE = "Alpha beta, gamma delta and epsilon zeta. Next."
 SENTENCES_EXPECTED = "Alpha beta, gamma delta and epsilon zeta.\nNext."

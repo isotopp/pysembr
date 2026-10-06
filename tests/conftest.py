@@ -8,7 +8,6 @@ from pathlib import Path
 
 import pytest
 
-
 type CliRunner = Callable[..., subprocess.CompletedProcess[bytes]]
 
 

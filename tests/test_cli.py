@@ -2,9 +2,9 @@ import json
 from pathlib import Path
 
 import pytest
+from conftest import CliRunner
 
 from pysembr.cli import main
-from conftest import CliRunner
 
 
 def test_installed_help_explains_markdown_pipeline_without_reading_input(
@@ -332,6 +332,48 @@ def test_explanations_go_to_stderr_after_identical_formatted_stdout(run_cli: Cli
         b"pysembr: explain: output lines 1-2: Mandatory sentence boundary retained "
         b"although the adjacent lines fit together.\n"
     )
+
+
+@pytest.mark.parametrize(
+    "canonical,aliases,explanation",
+    [
+        (
+            "sentences",
+            ("sentence", "1"),
+            b"Sentence mode keeps this sentence whole; internal splitting is disabled.",
+        ),
+        (
+            "punctuation",
+            ("comma", "2"),
+            b"no eligible internal punctuation boundary remains",
+        ),
+        (
+            "words",
+            ("word", "3"),
+            b"no eligible semantic boundary remains",
+        ),
+    ],
+)
+def test_mode_aliases_preserve_mode_specific_explanations(
+    run_cli: CliRunner,
+    canonical: str,
+    aliases: tuple[str, str],
+    explanation: bytes,
+):
+    arguments = ("--explain", "--width", "12", "--split-mode")
+    source = b"Long prose with more words."
+    expected = run_cli(*arguments, canonical, input=source)
+    assert expected.returncode == 0
+    assert explanation in expected.stderr
+    normal = run_cli("--width", "12", "--split-mode", canonical, input=source)
+    assert normal.returncode == 0
+    assert normal.stdout == expected.stdout
+    assert normal.stderr == b""
+    for alias in aliases:
+        actual = run_cli(*arguments, alias, input=source)
+        assert actual.returncode == 0
+        assert actual.stdout == expected.stdout
+        assert actual.stderr == expected.stderr
 
 
 @pytest.mark.parametrize("mode", ["pipeline", "separate-files", "same-file"])

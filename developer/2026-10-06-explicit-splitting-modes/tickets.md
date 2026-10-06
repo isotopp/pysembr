@@ -217,7 +217,7 @@ viewing instructions after T05. Merge and run the full suite between waves.
 
 ## T04: Report decisions according to the active mode
 
-**Status:** Planned. **Dependencies:** T02, T03. **Stories:** US-05.
+**Status:** Done. **Dependencies:** T02, T03. **Stories:** US-05.
 
 ### Work
 
@@ -242,6 +242,28 @@ viewing instructions after T05. Merge and run the full suite between waves.
 - Existing default corpus explanation records remain valid; any necessary text
   changes are explained and captured deliberately.
 - Full quality gates pass.
+
+### Completion evidence
+
+- `format_report` reports an over-width retained sentence as `sentence-mode`,
+  explaining that internal splitting is disabled. It emits this reason only for
+  editable sentence spans, while protected blocks and inline source keep their
+  existing protection reasons. Sentence mode does not emit `no-boundary` or
+  claim an internal candidate search occurred.
+- `no-boundary` diagnostics in punctuation mode now name only internal
+  punctuation. Word mode continues to describe semantic boundary searches and
+  retains its overflow, connector-repair, Markdown-rejection, and sentence
+  boundary records.
+- Added report and installed-CLI tests for every canonical mode and approved
+  aliases, output equality with explanations on/off, prefixed lines, CRLF hard
+  breaks, protected spans, Markdown recovery, and mode-specific reasons. Existing
+  file success and failure tests continue to pass.
+- Full validation on Python 3.14.2: `uv run pytest` (403 passed),
+  `uv run ruff format src tests` (35 files unchanged),
+  `uv run ruff check --fix src tests` (passed), and `uv run ty check src tests`
+  (passed). Ruff also identified an older T01 `SplitMode` type-alias syntax
+  violation and import-order cleanup needed by the current locked Ruff; corrected
+  the alias to Python 3.14 `type` syntax and applied its mechanical import fixes.
 
 ## T05: Document modes and migration in help, README, and acceptance guidance
 

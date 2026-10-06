@@ -8,8 +8,9 @@ from collections.abc import Sequence
 from importlib.metadata import version
 from pathlib import Path
 from typing import Any
-from .models import Options, SplitMode
+
 from .languages import select_languages
+from .models import Options, SplitMode
 
 _SPLIT_MODES: dict[str, SplitMode] = {
     "sentences": "sentences",

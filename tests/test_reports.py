@@ -1,3 +1,5 @@
+import pytest
+
 from pysembr.formatter import format_report, format_text
 from pysembr.models import Options
 
@@ -33,6 +35,50 @@ def test_report_explains_actual_overflow_and_terminal_no_boundary():
     assert [(d.line, d.reason, d.width) for d in terminal.diagnostics] == [
         (1, "no-boundary", 28)
     ]
+
+
+def test_sentence_mode_explains_long_sentences_without_claiming_a_boundary_search():
+    source = "This sentence is intentionally much longer than the width. Another long sentence remains whole."
+    options = Options(width=20, split_mode="sentences")
+
+    report = format_report(source, options)
+
+    assert report.text == format_text(source, options)
+    assert report.text == (
+        "This sentence is intentionally much longer than the width.\n"
+        "Another long sentence remains whole."
+    )
+    assert [(d.line, d.reason, d.width) for d in report.diagnostics] == [
+        (1, "sentence-mode", 58),
+        (2, "sentence-mode", 36),
+    ]
+
+
+@pytest.mark.parametrize(
+    "mode,expected",
+    [
+        ("sentences", [(1, "sentence-mode", 43), (3, "sentence-mode", 62)]),
+        ("punctuation", [(2, "no-boundary", 31), (4, "no-boundary", 62)]),
+        ("words", []),
+    ],
+)
+def test_each_mode_reports_prefixed_hard_break_output_lines(mode, expected):
+    source = (
+        "- Alpha beta, gamma delta and epsilon zeta. Next sentence.  \r\n"
+        "  Hard break continues through many words without a delimiter.\r\n"
+    )
+    options = Options(width=25, split_mode=mode)
+
+    report = format_report(source, options)
+
+    assert report.text == format_text(source, options)
+    assert "  \r\n  Hard break" in report.text
+    assert [(d.line, d.reason, d.width) for d in report.diagnostics] == expected
+    assert all(
+        diagnostic.width == len(report.text.splitlines()[diagnostic.line - 1])
+        for diagnostic in report.diagnostics
+        if diagnostic.width is not None
+    )
 
 
 def test_sentence_and_rejection_reports_follow_final_recovered_lines():
@@ -71,6 +117,13 @@ def test_protected_width_reasons_use_shifted_final_physical_lines():
         for d in report.diagnostics
         if d.width is not None
     )
+    sentence_mode = format_report(source, Options(width=25, split_mode="sentences"))
+    assert [
+        (d.line, d.reason)
+        for d in sentence_mode.diagnostics
+        if d.reason.startswith("protected")
+    ] == [(6, "protected-block"), (9, "protected-inline")]
+    assert not any(d.reason == "sentence-mode" for d in sentence_mode.diagnostics)
     unmapped = format_report(
         "NUL\x00text is long. More.\n\nSafe. Next.", Options(width=10)
     )
@@ -134,6 +187,8 @@ def test_custom_and_disabled_terms_are_explained_without_guessing_boundaries():
     disabled = format_report(source, Options(width=12, split_mode="punctuation"))
     assert disabled.text == source
     assert [(d.line, d.reason) for d in disabled.diagnostics] == [(1, "no-boundary")]
+    assert "punctuation" in disabled.diagnostics[0].message
+    assert "word" not in disabled.diagnostics[0].message
     overridden = format_report(
         source,
         Options(
@@ -145,7 +200,9 @@ def test_custom_and_disabled_terms_are_explained_without_guessing_boundaries():
             languages=("english",),
         ),
     )
-    assert overridden == disabled
+    assert overridden.text == disabled.text
+    assert [(d.line, d.reason) for d in overridden.diagnostics] == [(1, "no-boundary")]
+    assert "semantic" in overridden.diagnostics[0].message
     unsafe = format_report(
         "Verylongprefix, ---", Options(width=4, split_mode="punctuation")
     )

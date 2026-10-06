@@ -160,7 +160,12 @@ def _segment_paragraph(
                 chosen = boundary, next_position
             if chosen is None:
                 if events is not None:
-                    events.append(Event("no-boundary", start, end))
+                    message = (
+                        "no eligible internal punctuation boundary remains."
+                        if options.split_mode == "punctuation"
+                        else "no eligible semantic boundary remains."
+                    )
+                    events.append(Event("no-boundary", start, end, message=message))
                 break
             boundary, next_position = chosen
             if overflow and events is not None:
@@ -180,6 +185,26 @@ def _segment_paragraph(
                 events,
             )
         )
+        if (
+            events is not None
+            and options.split_mode == "sentences"
+            and _source_width(
+                sentence_prefix + text[sentence_start:end],
+                marker_width if end == len(text) else 0,
+            )
+            > options.width
+            and not any(
+                start < end and sentence_start < finish
+                for start, finish in paragraph.protected_ranges
+            )
+            and not any(
+                event.reason == "markdown-rejection"
+                and event.start < end
+                and sentence_start < event.end
+                for event in events
+            )
+        ):
+            events.append(Event("sentence-mode", sentence_start, end))
         if end < len(text):
             selected.append((end, next_start))
         start = next_start
