@@ -401,6 +401,21 @@ CRLF/mixed endings/document fallback, and missing final newline.
 
 **Depends on:** T10. **Unblocks:** T12.
 
+**Status:** Done. Document formatting includes bullet and numbered item prose,
+using original markers and parser content columns for nested continuations.
+Tasks retain checkbox prefixes with ordinary list continuation indentation;
+lazy/tabbed source, item paragraphs, protected children, and tight/loose spacing
+remain structurally equivalent. Source width includes preserved hard-break
+markers on the final segment. Definition prose remains for T12.
+
+**Validation:** Public `format_text` TDD red/green cycles enable the epic bullet
+example and verify hard-break marker width. Full `uv run pytest` (177 passed),
+Ruff format/check, and `uv run ty check src tests` pass on Python 3.14.2.
+Exact-output/idempotence fixtures cover marker styles, multi-digit numbering,
+multiple nesting levels and item paragraphs, lazy/partial tabs, task states,
+multiline code/links, hard breaks, excessive prefixes, protected children,
+loose-list blank lines, and safe structural retries.
+
 ### Tasks
 
 - Apply paragraph formatting to each item's prose without crossing item,
