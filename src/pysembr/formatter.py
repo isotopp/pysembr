@@ -3,6 +3,8 @@
 import re
 from dataclasses import replace
 
+from pysembr._explanations import Event, Plan, explain_output
+from pysembr.diagnostics import Diagnostic, FormattingReport
 from pysembr.languages import connector_words, vocabulary, word_boundaries
 from pysembr.markdown import parse_document, safe_line_start, validate_replacements
 from pysembr.models import Options, ParagraphSource, Replacement
@@ -19,7 +21,10 @@ def format_paragraph(paragraph: ParagraphSource, options: Options) -> str:
 
 
 def _segment_paragraph(
-    paragraph: ParagraphSource, options: Options, marker_width: int = 0
+    paragraph: ParagraphSource,
+    options: Options,
+    marker_width: int = 0,
+    events: list[Event] | None = None,
 ) -> tuple[str, tuple[tuple[int, int], ...]]:
     text = paragraph.text
     folded = "".join(character.casefold() for character in text)
@@ -56,8 +61,22 @@ def _segment_paragraph(
         if not safe_line_start(
             text[match.end() :].splitlines()[0] if text[match.end() :] else ""
         ):
+            if events is not None:
+                events.append(
+                    Event(
+                        "markdown-rejection",
+                        match.start(),
+                        match.start() + len(match[1]),
+                        message="Rejected boundary because the continuation could create a Markdown block.",
+                    )
+                )
             return match[0]
         breaks[match.start() + len(match[1])] = match.end()
+        if events is not None:
+            boundary = (match.start() + len(match[1]), match.end())
+            events.append(
+                Event("sentence-boundary", boundary[0] - 1, boundary[1] + 1, boundary)
+            )
         return match[0]
 
     _SENTENCE.sub(split, text)
@@ -104,18 +123,26 @@ def _segment_paragraph(
             chosen = None
             overflowing: list[tuple[int, int, int, int]] = []
             for category, candidates in enumerate(categories):
-                eligible = [
-                    (boundary, next_position)
-                    for boundary, next_position in candidates
-                    if boundary > start
-                    and next_position < end
-                    and not any(
+                eligible = []
+                for boundary, next_position in candidates:
+                    if not (boundary > start and next_position < end) or any(
                         span_start < next_position and boundary < span_end
                         for span_start, span_end in paragraph.protected_ranges
                         + paragraph.hard_breaks
-                    )
-                    and safe_line_start(text[next_position:].splitlines()[0])
-                ]
+                    ):
+                        continue
+                    if not safe_line_start(text[next_position:].splitlines()[0]):
+                        if events is not None:
+                            events.append(
+                                Event(
+                                    "markdown-rejection",
+                                    boundary - 1,
+                                    boundary,
+                                    message="Rejected boundary because the continuation could create a Markdown block.",
+                                )
+                            )
+                        continue
+                    eligible.append((boundary, next_position))
                 fitting = []
                 for boundary, next_position in eligible:
                     emitted_width = len(
@@ -130,12 +157,17 @@ def _segment_paragraph(
                 if fitting:
                     chosen = max(fitting)
                     break
+            overflow = chosen is None and bool(overflowing)
             if chosen is None and overflowing:
                 _, boundary, _, next_position = min(overflowing)
                 chosen = boundary, next_position
             if chosen is None:
+                if events is not None:
+                    events.append(Event("no-boundary", start, end))
                 break
             boundary, next_position = chosen
+            if overflow and events is not None:
+                events.append(Event("overflow", start, boundary, chosen))
             internal.append(chosen)
             prefix = " " * paragraph.continuation_column
             start = next_position
@@ -148,6 +180,7 @@ def _segment_paragraph(
                 end,
                 sentence_prefix,
                 marker_width if end == len(text) else 0,
+                events,
             )
         )
         if end < len(text):
@@ -168,6 +201,7 @@ def _repair_connectors(
     end: int,
     first_prefix: str,
     marker_width: int,
+    events: list[Event] | None = None,
 ) -> list[tuple[int, int]]:
     connectors = connector_words(options)
     continuation = " " * paragraph.continuation_column
@@ -210,6 +244,18 @@ def _repair_connectors(
                     <= options.width
                 ):
                     boundaries.pop(boundary_index)
+                    if events is not None:
+                        neighbor = (
+                            "following" if boundary_index == index else "preceding"
+                        )
+                        events.append(
+                            Event(
+                                "connector-repair",
+                                joined_start,
+                                joined_end,
+                                message=f"Isolated connector joined to its {neighbor} segment within width.",
+                            )
+                        )
                     repaired = True
                     break
             if repaired:
@@ -221,30 +267,67 @@ def _repair_connectors(
 
 def format_text(text: str, options: Options) -> str:
     """Reassemble mapped prose and splice only validated paragraph edits."""
-    document = parse_document(text)
+    return _format_document(text, options)[0]
+
+
+def format_report(text: str, options: Options) -> FormattingReport:
+    """Format once and explain actual choices at final output locations."""
+    result, diagnostics = _format_document(text, options, report=True)
+    return FormattingReport(result, diagnostics)
+
+
+def _format_document(
+    text: str, options: Options, report: bool = False
+) -> tuple[str, tuple[Diagnostic, ...]]:
+    document = parse_document(text, classify=report)
+    traces: list[Plan] = []
     plans = []
     edits = []
     for paragraph in document.paragraphs:
-        chunks = _prepare_chunks(paragraph)
+        chunks = _prepare_chunks(paragraph, track_source=report)
+        events: list[list[Event]] | None = [[] for _ in chunks] if report else None
         breaks = [
-            list(_segment_paragraph(chunk, options, len(marker.rstrip("\r\n")))[1])
-            for chunk, marker in chunks
+            list(
+                _segment_paragraph(
+                    chunk,
+                    options,
+                    len(marker.rstrip("\r\n")),
+                    events[index] if events is not None else None,
+                )[1]
+            )
+            for index, (chunk, marker) in enumerate(chunks)
         ]
+        if events is not None:
+            for (chunk, _), recorded in zip(chunks, events, strict=True):
+                recorded.extend(
+                    Event("protected-inline", a, b) for a, b in chunk.protected_ranges
+                )
+            traces.append(Plan(paragraph, chunks, breaks, events, breaks))
         formatted = _render_chunks(chunks, breaks) + paragraph.trailing_ending
         plans.append((paragraph, chunks, breaks))
         edits.append(Replacement(paragraph.start, paragraph.end, formatted))
     if validate_replacements(document, edits):
-        return apply_replacements(text, edits)
+        result = apply_replacements(text, edits)
+        return result, explain_output(
+            document, result, options, traces, edits
+        ) if report else ()
 
     recovered: list[Replacement] = []
-    for paragraph, chunks, proposed in plans:
+    for plan_index, (paragraph, chunks, proposed) in enumerate(plans):
         accepted: list[list[tuple[int, int]]] = [[] for chunk in chunks]
+        if report:
+            traces[plan_index].accepted = None
         baseline = Replacement(
             paragraph.start,
             paragraph.end,
             _render_chunks(chunks, accepted) + paragraph.trailing_ending,
         )
         if not validate_replacements(document, [baseline]):
+            if report:
+                _reject_plan(
+                    traces[plan_index],
+                    "Rejected paragraph normalization because it changes supported Markdown meaning; original source retained.",
+                )
             continue
         for index, boundaries in enumerate(proposed):
             for boundary in boundaries:
@@ -256,6 +339,15 @@ def format_text(text: str, options: Options) -> str:
                 )
                 if not validate_replacements(document, [candidate]):
                     accepted[index].pop()
+                    if report:
+                        traces[plan_index].events[index].append(
+                            Event(
+                                "markdown-rejection",
+                                boundary[0] - 1,
+                                boundary[0],
+                                message="Rejected proposed boundary because it changes supported Markdown meaning.",
+                            )
+                        )
         candidate = Replacement(
             paragraph.start,
             paragraph.end,
@@ -263,7 +355,33 @@ def format_text(text: str, options: Options) -> str:
         )
         if validate_replacements(document, recovered + [candidate]):
             recovered.append(candidate)
-    return apply_replacements(text, recovered)
+            if report:
+                traces[plan_index].accepted = accepted
+        elif report:
+            _reject_plan(
+                traces[plan_index],
+                "Rejected paragraph edits because combined replacements change supported Markdown meaning; original source retained.",
+            )
+    result = apply_replacements(text, recovered)
+    return result, explain_output(
+        document, result, options, traces, recovered
+    ) if report else ()
+
+
+def _reject_plan(plan: Plan, message: str) -> None:
+    for (chunk, _), boundaries, events in zip(
+        plan.chunks, plan.proposed, plan.events, strict=True
+    ):
+        events.append(Event("markdown-rejection", 0, len(chunk.text), message=message))
+        events.extend(
+            Event(
+                "markdown-rejection",
+                boundary - 1,
+                boundary,
+                message="Rejected proposed boundary because the paragraph must retain its original source.",
+            )
+            for boundary, _ in boundaries
+        )
 
 
 def _render_chunks(
@@ -286,21 +404,40 @@ def _render_chunks(
 
 
 def _normalize_chunk(
-    paragraph: ParagraphSource, start: int, end: int, prefix: str
+    paragraph: ParagraphSource,
+    start: int,
+    end: int,
+    prefix: str,
+    track_source: bool = False,
 ) -> ParagraphSource:
     pieces: list[str] = []
+    source_positions: list[int] = []
     protected: list[tuple[int, int]] = []
     position = start
     length = 0
     for span_start, span_end in [
         span for span in paragraph.protected_ranges if start <= span[0] < span[1] <= end
     ] + [(end, end)]:
-        prose = re.sub(r"[ \t\r\n]+", " ", paragraph.text[position:span_start])
+        region = paragraph.text[position:span_start]
+        prose = re.sub(r"[ \t\r\n]+", " ", region)
+        mapped = (
+            [
+                paragraph.logical_to_source[position + match.start()]
+                for match in re.finditer(r"[^ \t\r\n]|[ \t\r\n]+", region)
+            ]
+            if track_source
+            else []
+        )
         if position == start:
+            if track_source and prose.startswith(" "):
+                mapped = mapped[1:]
             prose = prose.lstrip(" ")
         if span_start == end:
+            if track_source and prose.endswith(" "):
+                mapped = mapped[:-1]
             prose = prose.rstrip(" ")
         pieces.append(prose)
+        source_positions.extend(mapped)
         length += len(prose)
         if span_start < span_end:
             literal = paragraph.original_source[
@@ -310,12 +447,22 @@ def _normalize_chunk(
                 + 1
             ]
             pieces.append(literal)
+            if track_source:
+                source_positions.extend(
+                    range(
+                        paragraph.logical_to_source[span_start],
+                        paragraph.logical_to_source[span_end - 1] + 1,
+                    )
+                )
             protected.append((length, length + len(literal)))
             length += len(literal)
         position = span_end
     return replace(
         paragraph,
         text="".join(pieces),
+        logical_to_source=tuple(source_positions)
+        if track_source
+        else paragraph.logical_to_source,
         first_prefix=prefix,
         protected_ranges=tuple(protected),
         hard_breaks=(),
@@ -323,14 +470,16 @@ def _normalize_chunk(
     )
 
 
-def _prepare_chunks(paragraph: ParagraphSource) -> list[tuple[ParagraphSource, str]]:
+def _prepare_chunks(
+    paragraph: ParagraphSource, *, track_source: bool = False
+) -> list[tuple[ParagraphSource, str]]:
     chunks = []
     start = 0
     prefix = paragraph.first_prefix
     for marker_start, marker_end in paragraph.hard_breaks + (
         (len(paragraph.text), len(paragraph.text)),
     ):
-        chunk = _normalize_chunk(paragraph, start, marker_start, prefix)
+        chunk = _normalize_chunk(paragraph, start, marker_start, prefix, track_source)
         chunks.append((chunk, paragraph.text[marker_start:marker_end]))
         prefix = " " * paragraph.continuation_column
         start = marker_end

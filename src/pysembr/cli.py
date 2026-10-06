@@ -5,7 +5,8 @@ import sys
 from collections.abc import Sequence
 from dataclasses import asdict
 
-from .formatter import format_text
+from .diagnostics import render_diagnostics
+from .formatter import format_report, format_text
 from .languages import LANGUAGES
 from .options import parse_options
 from .transport import read_input, write_output
@@ -22,8 +23,13 @@ def main(argv: Sequence[str] | None = None) -> int:
         return 0
     try:
         document = read_input(options.infile, options.encoding)
-        result = format_text(document.text, options)
+        report = format_report(document.text, options) if options.explain else None
+        result = (
+            report.text if report is not None else format_text(document.text, options)
+        )
         write_output(options.outfile, document, result)
+        if report is not None:
+            sys.stderr.write(render_diagnostics(report.diagnostics))
     except (OSError, UnicodeError, ValueError) as error:
         print(f"pysembr: {error}", file=sys.stderr)
         for note in getattr(error, "__notes__", ()):

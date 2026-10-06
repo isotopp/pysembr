@@ -319,3 +319,91 @@ def test_runtime_failures_exit_one_without_tracebacks_or_stdout(
     assert result.stdout == b""
     assert diagnostic in result.stderr
     assert b"Traceback" not in result.stderr
+
+
+def test_explanations_go_to_stderr_after_identical_formatted_stdout(run_cli: CliRunner):
+    normal = run_cli(input=b"First. Next.")
+    explained = run_cli("--explain", input=b"First. Next.")
+    assert explained.returncode == 0
+    assert explained.stdout == normal.stdout == b"First.\nNext."
+    assert normal.stderr == b""
+    assert explained.stderr == (
+        b"pysembr: explain: output lines 1-2: Mandatory sentence boundary retained "
+        b"although the adjacent lines fit together.\n"
+    )
+
+
+@pytest.mark.parametrize("mode", ["pipeline", "separate-files", "same-file"])
+def test_explanations_preserve_utf16_bom_crlf_and_atomic_files(
+    run_cli: CliRunner, tmp_path: Path, mode: str
+):
+    original = b"\xff\xfe" + "First. Next.\r\n".encode("utf-16-le")
+    expected = b"\xff\xfe" + "First.\r\nNext.\r\n".encode("utf-16-le")
+    source = tmp_path / "input.md"
+    destination = source if mode == "same-file" else tmp_path / "output.md"
+    arguments = []
+    if mode != "pipeline":
+        arguments = ["-i", str(source), "-o", str(destination)]
+        source.write_bytes(original)
+    normal = run_cli(*arguments, input=original)
+    if mode != "pipeline":
+        assert destination.read_bytes() == expected
+        source.write_bytes(original)
+    explained = run_cli("--explain", *arguments, input=original)
+    assert explained.returncode == normal.returncode == 0
+    assert (
+        explained.stdout == normal.stdout == (expected if mode == "pipeline" else b"")
+    )
+    assert normal.stderr == b""
+    assert b"pysembr: explain: output lines 1-2:" in explained.stderr
+    if mode != "pipeline":
+        assert destination.read_bytes() == expected
+        if mode == "separate-files":
+            assert source.read_bytes() == original
+        assert set(tmp_path.iterdir()) == {source, destination, tmp_path / "home"}
+
+
+@pytest.mark.parametrize(
+    "arguments,input",
+    [
+        (["-i", "missing.md"], b""),
+        (["-o", "missing/output.md"], b"First. Next."),
+        ([], b"\xff"),
+    ],
+)
+def test_explanations_do_not_emit_decisions_when_input_or_output_fails(
+    run_cli: CliRunner, arguments: list[str], input: bytes
+):
+    result = run_cli("--explain", *arguments, input=input)
+    assert result.returncode == 1
+    assert result.stdout == b""
+    assert b"pysembr:" in result.stderr
+    assert b"pysembr: explain:" not in result.stderr
+
+
+def test_explanations_are_not_emitted_when_atomic_replace_fails(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+):
+    config = tmp_path / "config.ini"
+    config.write_text("[default]\n")
+    source = tmp_path / "input.md"
+    destination = tmp_path / "output.md"
+    source.write_bytes(b"First. Next.")
+    destination.write_bytes(b"original")
+
+    def fail_replace(self: Path, target: Path) -> Path:
+        raise OSError("replacement failed")
+
+    monkeypatch.setattr(Path, "replace", fail_replace)
+    assert (
+        main(
+            ["--explain", "-c", str(config), "-i", str(source), "-o", str(destination)]
+        )
+        == 1
+    )
+    output = capsys.readouterr()
+    assert output.out == ""
+    assert "replacement failed" in output.err
+    assert "pysembr: explain:" not in output.err
+    assert destination.read_bytes() == b"original"
+    assert set(tmp_path.iterdir()) == {source, destination, config}

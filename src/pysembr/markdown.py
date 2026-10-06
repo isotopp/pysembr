@@ -29,7 +29,7 @@ def create_parser(render: bool = False) -> MarkdownIt:
     )
 
 
-def parse_document(text: str) -> ParsedDocument:
+def parse_document(text: str, *, classify: bool = False) -> ParsedDocument:
     """Select only mapped prose; all other source remains owned by the caller."""
     parser = create_parser()
     paragraphs: list[ParagraphSource] = []
@@ -120,11 +120,35 @@ def parse_document(text: str) -> ParsedDocument:
 
     parser.block.ruler.at("paragraph", capture)
     environment: dict = {}
-    parser.parse(view, environment)
+    tokens = parser.parse(view, environment)
     mapped = tuple(
         protect_paragraph(p, create_parser(), environment) for p in paragraphs
     )
-    return ParsedDocument(text, mapped, view)
+    blocks = []
+    if classify:
+        names = {
+            "table_open": "table",
+            "blockquote_open": "blockquote",
+            "heading_open": "heading",
+            "code_block": "indented code",
+            "fence": "fenced code",
+            "html_block": "HTML block",
+            "front_matter": "front matter",
+            "math_block": "block math",
+            "hr": "thematic break",
+            "definition": "reference definition",
+            "footnote_reference_open": "footnote definition",
+        }
+        for token in tokens:
+            if token.type in names and token.map and token.map[0] < token.map[1]:
+                blocks.append(
+                    (
+                        lines[token.map[0]].start(),
+                        lines[token.map[1] - 1].end(),
+                        names[token.type],
+                    )
+                )
+    return ParsedDocument(text, mapped, view, tuple(blocks))
 
 
 def _inline_signature(tokens: list[Token]) -> tuple[object, ...]:

@@ -54,6 +54,7 @@ class ParsedDocument:
     text: str
     paragraphs: tuple[ParagraphSource, ...] = ()
     parser_view: str = ""
+    protected_blocks: tuple[tuple[int, int, str], ...] = ()
 
 
 @dataclass(frozen=True)

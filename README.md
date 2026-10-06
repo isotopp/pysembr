@@ -39,12 +39,48 @@ copying, symlink resolution, locking, and crash durability are outside scope.
 | `--config-file`, `-c` | Search only this INI file |
 | `--config-section`, `-s` | Select this exact INI section |
 | `--list-languages` | List canonical names and exit |
+| `--explain` | Explain final formatting decisions on stderr; off by default, CLI-only |
 | `--show-options` | Print effective options and selected configuration as JSON |
 | `--version`, `--help`, `-h` | Version or help, without requiring valid configuration |
 
 Success exits 0, invalid options/configuration exit 2, and input/output or
 formatting failures exit 1. Diagnostics go to stderr. Inspection commands do not
 read or format input; `--show-options` and `--list-languages` validate configuration.
+
+## Optional explanations
+
+Use `--explain` to explain width exceptions, semantic overflow boundaries,
+connector repairs, and rejected Markdown-sensitive proposals on stderr.
+Mandatory sentence boundaries are explained when the adjacent nonblank lines
+would fit together. Ordinary splits and preserved blank lines produce no noise.
+The formatted stdout or output file is byte-identical with and without the flag.
+Explanations are emitted only after output writing or atomic replacement succeeds.
+
+```bash
+printf 'First. Next.' | uv run pysembr --explain
+```
+
+Stdout remains `First.` and `Next.` on separate lines; stderr contains:
+
+```text
+pysembr: explain: output lines 1-2: Mandatory sentence boundary retained although the adjacent lines fit together.
+```
+
+Locations are one-based final output lines, including shifts caused by earlier
+prose formatting and physical lines inside protected multiline markup. Reasons
+include protected block/inline source, absence of eligible boundaries, retained
+overflow, connector repair, and explicitly rejected Markdown proposals.
+Multiple reasons can explain one line. Protected or unmappable source with no
+specific parser block classification receives a conservative generic label.
+Explanations describe actual retained choices after Markdown recovery; a rejected
+proposal is never described as an emitted break. Width counts include prefixes,
+markup, and preserved hard-break markers. Existing abbreviation ambiguity remains.
+
+`--explain` is included in `--show-options` and is not an INI setting. Help,
+version, options, and language inspection produce no formatting explanations.
+Python callers can use `pysembr.formatter.format_report(text, options)` for the
+same formatted string plus typed `Diagnostic` values; `format_text` retains its
+string result and does not collect reports.
 
 ## Formatting rules
 
