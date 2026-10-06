@@ -252,8 +252,7 @@ chamber music of intimate conversation,
 and sacred works of austere beauty.
 He is still the measure against
 which other composers are judged,
-not because he was the greatest,
-but
+not because he was the greatest, but
 because he achieved a level of emotional
 and structural clarity
 that has rarely been matched.

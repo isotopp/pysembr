@@ -79,6 +79,16 @@ If no eligible boundary exists, keep the remainder long. Punctuation stays
 on the preceding line; split words start the next line. `--no-word-splitting`
 disables both word categories. Separate sentences are never recombined.
 
+After internal segmentation, repair exact standalone English `and`, `but`,
+`or` and German `und`, `aber`, `oder` fragments when they belong to that
+language's enabled primary inventory. Try joining to the following segment
+first, then the preceding segment; the joined source line must fit width,
+including indentation, markers, and hard-break markers. Retain the fragment
+when neither neighbor fits. Repairs stay within one sentence and hard-break
+region and pass Markdown validation. Punctuation-attached words, protected
+markup, and other short phrases are not repair targets. Disabling word
+splitting also disables repair; disabling extended fallback does not.
+
 Width counts Unicode code points in emitted source, including indentation,
 markers, and inline markup. Equality fits. Width is a soft limit: protected
 content, unsafe Markdown boundaries, unbreakable text, and prefixes consuming
