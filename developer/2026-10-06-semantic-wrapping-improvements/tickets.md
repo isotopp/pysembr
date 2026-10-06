@@ -2,7 +2,7 @@
 
 ## Contract and workflow
 
-Implement the accepted [user stories](user-stories.md). All tickets are Todo.
+Implement the accepted [user stories](user-stories.md). T01 is Done; T02-T09 are Todo.
 The existing formatter and the
 [original Mozart audit](../2026-10-06-version-2/mozart-width-40-audit.md)
 are the baseline. Do not change the historical audit to describe new behavior.
@@ -49,7 +49,7 @@ algorithm stabilizes, preventing vocabulary changes from obscuring T02/T04.
 
 ## T01: Record the baseline and final implementation rules
 
-**Status:** Todo. **Dependencies:** None. **Stories:** All.
+**Status:** Done. **Dependencies:** None. **Stories:** All.
 
 ### Work
 
@@ -79,6 +79,15 @@ algorithm stabilizes, preventing vocabulary changes from obscuring T02/T04.
 - The interface contract permits T07 to work without editing the formatter.
 - Pending inventory choices are delegated to T03/T06 with evidence criteria;
   no algorithm or CLI decision is silently left to an implementation ticket.
+
+### Completion evidence
+
+- Recorded [implementation-contract.md](implementation-contract.md), including
+  public seams, deterministic selection, strict connector repair, and the
+  diagnostic interface shared by T07/T08.
+- Preserved the exact historical output in `baseline/mozart-width-40.md`;
+  SHA-256 matches the original audit. Documentation-only ticket; no runtime
+  or test changes.
 
 ## T02: Split at the nearest safe boundary beyond width
 
