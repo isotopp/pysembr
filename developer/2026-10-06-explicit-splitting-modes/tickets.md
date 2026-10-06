@@ -307,15 +307,9 @@ viewing instructions after T05. Merge and run the full suite between waves.
   corpus audits remain historical records.
 - No concrete `--explain` output example was added while T04's report changes
   were in progress. T07 will complete the integrated mode/report cross-check.
-- Validation: full suite, 397 passed; `ruff format src tests` left all 35 files
-  unchanged; targeted Ruff checks for `options.py` and `test_cli.py` passed, as
-  did `ty check src tests`. This worktree had no `.venv`, so installed project
-  tools were used with its source on `PYTHONPATH`; ty was pointed at the
-  project's Python 3.14 environment. The whole-project `ruff check --fix src
-  tests` auto-fixed ten unrelated import-order findings and remained nonzero on
-  the base `SplitMode: TypeAlias` finding. I reverted the unrelated edits to
-  keep T05 scoped. T04 is changing the alias to Python 3.14 `type` syntax; rerun
-  the full Ruff gate after T04 is merged.
+- At T05's commit point, its base still had Ruff's Python 3.14 type-alias
+  finding; the dependent T04 change fixed it. T07's integrated full-suite and
+  repo-wide quality-gate results below supersede that intermediate limitation.
 
 ## T06: Add and verify the section-1 manual
 
@@ -364,7 +358,7 @@ viewing instructions after T05. Merge and run the full suite between waves.
 
 ## T07: Complete integrated acceptance and delivery verification
 
-**Status:** Planned. **Dependencies:** T06. **Stories:** All.
+**Status:** Done. **Dependencies:** T06. **Stories:** All.
 
 ### Work
 
@@ -389,3 +383,25 @@ viewing instructions after T05. Merge and run the full suite between waves.
 - Default output is unchanged; intentional new-mode behavior is verified.
 - Final docs and manual agree with the installed command. No release or
   publication actions are performed.
+
+### Completion evidence
+
+- Integrated T01-T06 and ran all gates on `main`: 404 tests passed; Ruff format,
+  `ruff check --fix src tests`, `ty check src tests`, and `uv lock --check`
+  passed. `mandoc -Tlint docs/pysembr.1` passed.
+- Re-ran the requested width-40 command in the primary checkout. The input hash
+  is `c4f6d7d9dc3fe2ae9871df00399195782d46fd01c2fe3b14c9ccb15a567a27ec`; the
+  formatted output remains byte-identical to the audited golden, SHA-256
+  `52854212a14ac895cb16e95357ff20a5bb35c9a09f25ee2158a6046ed817f4eb`.
+  It has 271 lines, 30 over width, and maximum line width 77.
+- The `--explain` run produced byte-identical stdout and all 35 captured
+  explanation records. `--split-mode sentences`, `punctuation`, and `words` at
+  width 25 matched the README examples; the words default and six singular/
+  numeric aliases also matched their canonical mode.
+- Built the 2.1.0 sdist and wheel. Installed the fresh wheel into a clean Python
+  3.14 environment and verified its version, language resource, explanations,
+  canonical inspection output, aliases, and all three modes.
+- Rendered and linted the manual, and cross-checked examples against the
+  installed CLI. All seven tickets and six stories are complete; completed
+  ticket worktrees and branches were removed after merge. No release or
+  publication action was taken.
