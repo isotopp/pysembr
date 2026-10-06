@@ -94,6 +94,9 @@ def test_loose_items_preserve_protected_children_and_existing_blank_lines():
         .replace("  Last. Next.", "  Last.\n  Next.")
         .replace("- Other. End.", "- Other.\n  End.")
     )
+    expected = expected.replace(
+        "  : Definition. Sentence.", "  : Definition.\n    Sentence."
+    )
     assert format_text(source, Options()) == expected
     assert format_text(expected, Options()) == expected
 

@@ -433,14 +433,27 @@ loose-list blank lines, and safe structural retries.
 - T02-defined tabs, lazy continuations, and task-list behavior are verified.
 - Reformatting never renumbers, flattens, or detaches list content.
 
-## T12: Format colon-marker definition lists
+## T12: Format colon and tilde definition lists
 
 **Depends on:** T11. **Unblocks:** T14.
+
+**Status:** Done. All mapped definition prose participates in document
+formatting, using colon/tilde source prefixes and parser-required continuation
+columns. Terms remain unmapped and exact; multiple definitions, paragraphs,
+nested lists/definitions, and protected children retain their relationships.
+
+**Validation:** Public `format_text` TDD red/green cycle delivers the epic's
+colon example. Full `uv run pytest` (184 passed), Ruff format/check, and
+`uv run ty check src tests` pass on Python 3.14.2. Exact/idempotent fixtures
+cover both marker styles, unchanged term spaces, multiple definitions/terms,
+loose/multi-paragraph definitions, list nesting in both directions, multiline
+inline source/hard breaks, exact-width and excessive prefixes, protected
+children, and safe structural retries.
 
 ### Tasks
 
 - Preserve term lines and apply paragraph formatting to definition prose.
-- Preserve colon markers, multiple definitions, nested content, and blank
+- Preserve colon/tilde markers, multiple definitions, nested content, and blank
   lines; align new continuations to the definition text column.
 - Reuse prefix-aware width calculations and protected-block handling.
 
