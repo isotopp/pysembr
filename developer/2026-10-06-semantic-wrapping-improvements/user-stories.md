@@ -13,9 +13,10 @@ The audit found 27 over-width prose lines without a fitting boundary and six
 adjacent pairs of short lines caused by ordered greedy segmentation.
 The remaining over-width lines are protected Markdown content.
 
-This is a proposed follow-up epic, dated 2026-10-06. Story order expresses
-the preferred delivery order; implementation details explicitly marked as
-open need resolution before implementation. No release version is assigned.
+This follow-up epic is accepted, dated 2026-10-06. Connector repair is accepted
+only when the resulting lines fit within width. Story order expresses the
+preferred review order; implementation dependencies are recorded in
+[tickets.md](tickets.md). No release version is assigned.
 
 All examples below use width 40 with English and German word splitting and
 extended fallback enabled. Source excerpts retain the physical wrapping in
@@ -43,9 +44,9 @@ start or end within a paragraph and do not introduce new paragraph boundaries.
 8. Re-run the Mozart width-40 command and produce an updated audit. Explain
    changed lines and remaining exceptions; do not optimize for counts alone.
 
-All examples given below are assuming a `--width 40`.
-
 ## US-01: Continue splitting when the first usable boundary exceeds width
+
+**Status:** Accepted.
 
 **As a** writer, **I want** an over-width sentence split at the nearest safe
 semantic boundary when none fits, **so that** a small width overflow does not
@@ -100,17 +101,22 @@ boundary leaves a modest overflow instead of retaining the 78-character line.
 
 ## US-02: Avoid isolated connector fragments
 
+**Status:** Accepted only for repairs whose resulting lines fit within width.
+
 **As a** writer, **I want** splitting to avoid leaving a connector alone on
 its own line, **so that** the output preserves readable units of thought.
 
 ### Acceptance criteria
 
-1. Use limited lookahead to identify proposed single-word connector segments,
+1. Identify proposed single-word connector segments,
    such as the audit's isolated `but` before `because he achieved ...`.
-2. When a safe alternative exists, choose a boundary arrangement that avoids
-   the isolated connector within the same sentence and hard-break region.
-3. Document the precise exception to greedy/category-priority selection,
-   including which alternatives may be considered and their tie-breaking.
+2. Prefer attaching an isolated connector to the following segment when the
+   joined line fits; otherwise attach it to the preceding segment if that
+   joined line fits. Include emitted prefixes in width calculations and emit
+   continuation indentation only once.
+3. This narrow repair may remove an internal break selected by greedy
+   segmentation. Every line formed by the repair must be at most the target
+   width. Never use the US-01 overflow allowance to justify connector repair.
 4. Retain protected content, mandatory sentence boundaries, and Markdown
    structure. Never merge across a paragraph, list item, or hard break.
 5. If no permitted alternative exists, retain the fragment rather than
@@ -118,12 +124,15 @@ its own line, **so that** the output preserves readable units of thought.
 6. Include English and German examples, repeated connectors, list items,
    custom vocabulary, and cases where a short line is a valid semantic unit.
 
-### Design decisions to resolve
+### Implementation boundaries
 
-- Define connector eligibility; membership in the existing primary-word list
-  alone is insufficient because that list also contains words such as `this`.
-- Decide whether alternatives may remove an earlier internal break, select
-  a lower-priority boundary, or use the overflow fallback from US-01.
+- Define and document a small connector subset during vocabulary review;
+  membership in the existing primary-word list alone is insufficient because
+  that list also contains words such as `this`. Initial examples must cover
+  `and`, `but`, `or`, and their German counterparts `und`, `aber`, `oder`.
+- Apply repairs in source order and repeat until no eligible repair remains;
+  each repair removes a break, so this process terminates. Validate the final
+  edits with the existing Markdown safety checks.
 - Start with single-word connector fragments. Broader handling of short
   phrases such as `the opera` requires separate evidence and a defined rule;
   a general minimum line length is not part of this story.
@@ -151,21 +160,24 @@ and structural clarity
 that has rarely been matched.
 ```
 
-Desired formatting, illustrating the option of keeping the connector with
-the following clause and permitting a small overflow:
+Desired formatting, attaching `but` to the preceding segment because joining
+it to the following segment would exceed width:
 
 ```markdown
-not because he was the greatest,
-but because he achieved a level of emotional
+not because he was the greatest, but
+because he achieved a level of emotional
 and structural clarity
 that has rarely been matched.
 ```
 
-The second desired line is 44 characters. This example expresses the desired
-readability improvement; permitting this particular overflow is one of the
-open design choices above, not yet a confirmed selection rule.
+The first desired line is 36 characters. Joining `but` to the following line
+would produce 44 characters and is rejected. If neither neighbor fits, retain
+the isolated connector. US-01 still permits overflow for a different reason:
+no semantic boundary fits in an over-width remainder.
 
 ## US-03: Improve English and German segmentation vocabularies
+
+**Status:** Accepted.
 
 **As a** writer of English or German, **I want** well-chosen split terms,
 **so that** long prose has useful boundaries without excessive fragmentation.
@@ -215,6 +227,8 @@ This excerpt demonstrates an English addition; German changes require their
 own corpus examples, as specified above.
 
 ## US-04: Recognize additional abbreviations conservatively
+
+**Status:** Accepted.
 
 **As a** writer, **I want** familiar abbreviated names and titles kept
 together, **so that** abbreviation periods do not create false sentences.
@@ -266,6 +280,8 @@ Keeping `St. Marx` together is the abbreviation story's essential requirement.
 
 ## US-05: Explain formatting decisions without disrupting pipelines
 
+**Status:** Accepted.
+
 **As a** user tuning formatting, **I want** optional explanations of width
 exceptions and selected boundaries, **so that** I can understand the output
 and distinguish protected content from heuristic limitations.
@@ -285,12 +301,19 @@ and distinguish protected content from heuristic limitations.
 6. Cover stdin/stdout, separate files, same-file replacement, and disabled
    diagnostics. Document the diagnostic format and provide short examples.
 
-### Design decisions to resolve
+### Diagnostic contract
 
-- Define diagnostic granularity and whether explanations describe only
-  exceptions or all chosen boundaries. Prefer concise exception reporting.
-- Define how formatting explanations are distinguished from errors and
-  whether a stable machine-readable format is needed; none is assumed here.
+- Use concise, human-readable stderr records with a `pysembr: explain:`
+  prefix, final output line number, and reason. Errors retain their existing
+  diagnostic prefix and exit behavior. No machine-readable format is required.
+- `--explain` is a CLI-only switch, off by default, and is included in
+  `--show-options`; this epic does not add an INI setting for explanations.
+- Report over-width lines and overflow selections, connector repairs, and
+  boundaries rejected for Markdown safety. Include sentence-boundary reasons
+  for adjacent nonblank editable lines that would fit together. Do not report
+  every ordinary split or preserved blank line.
+- Report final retained decisions, with rejected proposals explicitly labeled;
+  never describe a discarded proposal as an emitted break.
 
 **Dependencies:** US-01 through US-04 for finalized reasons and examples.
 Diagnostic interface design can proceed independently.
@@ -315,11 +338,11 @@ Desired formatted output with `--explain` remains identical:
 | 27 January 1756 | Mozart was born in Salzburg. |
 ```
 
-Desired accompanying stderr, with wording illustrative until the diagnostic
-format is resolved:
+Desired accompanying stderr, with wording illustrative of the diagnostic
+contract:
 
 ```text
-output line <N>: 50 characters exceed width 40; protected Markdown table row retained unchanged.
+pysembr: explain: output line <N>: 50 characters exceed width 40; protected Markdown table row retained unchanged.
 ```
 
 `<N>` must be the actual line number in the revised output, not the baseline's
@@ -330,7 +353,7 @@ or contaminating formatted stdout.
 ## Delivery order and completion evidence
 
 1. US-01: Nearest safe boundary beyond width.
-2. US-02: Limited lookahead for isolated connectors.
+2. US-02: Width-respecting repair of isolated connectors.
 3. US-03: Reviewed English and German vocabularies.
 4. US-04: Conservative abbreviation improvements.
 5. US-05: Optional formatting explanations.
