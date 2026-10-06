@@ -136,13 +136,11 @@ def _segment_paragraph(
 
 
 def format_text(text: str, options: Options) -> str:
-    """Reassemble ordinary/list prose and splice only validated paragraph edits."""
+    """Reassemble mapped prose and splice only validated paragraph edits."""
     document = parse_document(text)
     plans = []
     edits = []
     for paragraph in document.paragraphs:
-        if any(ancestor in {"dl", "dd"} for ancestor in paragraph.ancestors):
-            continue
         chunks = _prepare_chunks(paragraph)
         breaks = [
             list(_segment_paragraph(chunk, options, len(marker.rstrip("\r\n")))[1])
