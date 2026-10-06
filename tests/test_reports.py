@@ -2,6 +2,15 @@ from pysembr.formatter import format_report, format_text
 from pysembr.models import Options
 
 
+def test_leading_bom_metadata_is_retained_but_excluded_from_report_width():
+    report = format_report("\ufeff123456", Options(width=5))
+    assert report.text == "\ufeff123456"
+    assert [(d.line, d.reason, d.width) for d in report.diagnostics] == [
+        (1, "no-boundary", 6)
+    ]
+    assert format_report("\ufeff12345", Options(width=5)).diagnostics == ()
+
+
 def test_report_explains_actual_overflow_and_terminal_no_boundary():
     source = (
         "This relationship would fester for eight years before breaking apart entirely."

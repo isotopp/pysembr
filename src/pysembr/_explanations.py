@@ -58,6 +58,9 @@ def explain_output(
 ) -> tuple[Diagnostic, ...]:
     starts = [0, *(m.end() for m in re.finditer(r"\r\n|\r|\n", output))]
     bodies = re.split(r"\r\n|\r|\n", output)
+    # The parser retains a leading BOM outside editable prose; transport
+    # likewise stores it separately from the text whose width is measured.
+    bodies[0] = bodies[0].removeprefix("\ufeff")
     widths = [len(body) for body in bodies]
     events = _project_events(plans, edits, starts)
     diagnostics = _protected_diagnostics(
