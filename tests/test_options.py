@@ -10,6 +10,15 @@ def test_default_options(tmp_path):
     assert parse_options([], cwd=tmp_path, home=tmp_path) == Options()
 
 
+def test_explanations_are_opt_in_and_cli_only(tmp_path):
+    assert parse_options([], cwd=tmp_path, home=tmp_path).explain is False
+    assert parse_options(["--explain"], cwd=tmp_path, home=tmp_path).explain is True
+    (tmp_path / ".sembr").write_text("[default]\nexplain=true\n")
+    with pytest.raises(SystemExit) as error:
+        parse_options(["--explain"], cwd=tmp_path, home=tmp_path)
+    assert error.value.code == 2
+
+
 def test_cli_values_and_boolean_overrides(tmp_path):
     options = parse_options(
         [

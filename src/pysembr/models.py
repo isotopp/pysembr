@@ -71,4 +71,5 @@ class Options:
     config_section: str | None = None
     show_options: bool = False
     list_languages: bool = False
+    explain: bool = False
     vocabulary_overrides: dict[str, tuple[str, ...]] = field(default_factory=dict)
