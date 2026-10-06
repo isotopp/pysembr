@@ -150,7 +150,16 @@ finished formatter or proof of all later acceptance criteria.
 
 **Depends on:** T01, T02, T03. **Unblocks:** T05, T06, T13.
 
-**Status:** To do; all prerequisites are complete.
+**Status:** Done. All legacy source/tests removed; fresh Python 3.14 scaffold,
+typed models, source-preserving replacement seam, installed help/version,
+and approved packaged language data established. Pinned parser dependencies
+resolved through uv; explicit setuptools package-data configuration retains
+`languages.json` in distributions.
+
+**Validation:** TDD red/green cycles at the confirmed source-splice and installed
+CLI seams; full `uv run pytest` (8 passed), Ruff format/check, and mypy pass
+on Python 3.14.2. Formatting deliberately returns an explicit scaffold error
+until T14; release version metadata is finalized in T16.
 
 ### Tasks
 

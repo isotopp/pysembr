@@ -1,11 +1,15 @@
 [project]
 name = "pysembr"
 version = "1.0.4"
-description = "Split lines in a natural language text according to sembr-inspired rules."
+description = "Markdown-aware semantic line breaking."
 readme = "README.md"
-requires-python = ">=3.11"
+requires-python = ">=3.14"
 license = { text = "MIT" }
 authors = [{ name = "Kristian Köhntopp", email = "kris-pysembr@koehntopp.de" }]
+dependencies = [
+    "markdown-it-py==4.2.0",
+    "mdit-py-plugins==0.6.1",
+]
 
 [project.scripts]
 pysembr = "pysembr.cli:main"
@@ -36,6 +40,13 @@ post_commit_hook = ""
 "pyproject.toml" = [
     'version = "{version}"',
 ]
-"src/pysembr/version.py" = [
-    '__version__ = "{version}"',
-]
+
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+pysembr = ["languages.json"]
