@@ -1,6 +1,7 @@
 """Capture original inline boundaries while parser rules consume source."""
 
 from dataclasses import replace
+from html.parser import HTMLParser
 import re
 
 from markdown_it import MarkdownIt
@@ -39,6 +40,7 @@ def protect_paragraph(
     ends = ends[left:right]
     ranges: list[tuple[int, int]] = []
     hard_breaks: list[tuple[int, int]] = []
+    html_tags: list[tuple[int, int]] = []
 
     def wrap(name: str, rule: RuleFuncInlineType) -> RuleFuncInlineType:
         def capture(state: StateInline, silent: bool) -> bool:
@@ -57,7 +59,10 @@ def protect_paragraph(
                             marker -= 1
                     hard_breaks.append((starts[marker], ends[newline]))
                 elif name != "newline":
-                    ranges.append((starts[start], ends[state.pos - 1]))
+                    span = (starts[start], ends[state.pos - 1])
+                    ranges.append(span)
+                    if name == "html_inline":
+                        html_tags.append(span)
             return matched
 
         return capture
@@ -93,7 +98,7 @@ def protect_paragraph(
         end = match.end()
         while end > match.start():
             last = original[end - 1]
-            if last in ".,;:!?\"'\u201d\u2019\u00bb\u203a\u201c":
+            if last in ".,;:!?\"'\u201d\u2019\u00bb\u203a\u201c\u00ab\u2039":
                 end -= 1
             elif last in ")]}":
                 opener = {")": "(", "]": "[", "}": "{"}[last]
@@ -104,6 +109,7 @@ def protect_paragraph(
             else:
                 break
         ranges.append((match.start(), end))
+    ranges.extend(_html_regions(original, html_tags))
     merged: list[tuple[int, int]] = []
     for start, end in sorted(ranges):
         if merged and start < merged[-1][1]:
@@ -119,3 +125,59 @@ def protect_paragraph(
             if not any(start <= span[0] and span[1] <= end for start, end in merged)
         ),
     )
+
+
+class _HtmlTag(HTMLParser):
+    """Classify only tags already recognized by the Markdown parser."""
+
+    def __init__(self) -> None:
+        super().__init__(convert_charrefs=False)
+        self.event: tuple[str, str] | None = None
+
+    def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
+        self.event = ("open", tag)
+
+    def handle_endtag(self, tag: str) -> None:
+        self.event = ("close", tag)
+
+    def handle_startendtag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
+        self.event = ("void", tag)
+
+
+def _html_regions(text: str, tags: list[tuple[int, int]]) -> list[tuple[int, int]]:
+    void = {
+        "area",
+        "base",
+        "br",
+        "col",
+        "embed",
+        "hr",
+        "img",
+        "input",
+        "link",
+        "meta",
+        "param",
+        "source",
+        "track",
+        "wbr",
+    }
+    stack: list[tuple[str, int]] = []
+    regions: list[tuple[int, int]] = []
+    for start, end in sorted(tags):
+        classifier = _HtmlTag()
+        classifier.feed(text[start:end])
+        classifier.close()
+        if classifier.event is None:
+            continue
+        kind, tag = classifier.event
+        if kind == "open" and tag not in void:
+            stack.append((tag, start))
+        elif kind == "close" and stack:
+            if stack[-1][0] != tag:
+                regions.append((stack[0][1], len(text)))
+                return regions
+            _, opening = stack.pop()
+            regions.append((opening, end))
+    if stack:
+        regions.append((stack[0][1], len(text)))
+    return regions
