@@ -295,7 +295,7 @@ Term
     - `uv run pytest`
     - `uv run ruff format src tests`
     - `uv run ruff check --fix src tests`
-    - `uv run mypy src`
+    - `uv run ty check src tests`
 
 ## Dependencies and delivery order
 

@@ -16,3 +16,8 @@ verbatim. Later parser/formatter fixtures build on these confirmed seams.
 Use pytest's `tmp_path` for real filesystem behavior. Inject failures only at
 system boundaries using pytest's `monkeypatch` fixture (file reads/writes,
 closes, and replacement), not by mocking production private helpers.
+
+Run the [AGENTS.md quality gates](../AGENTS.md#quality-gates) before completion;
+`uv run ty check src tests` checks test fixtures alongside production source.
+Release installation checks use built artifacts in a fresh Python 3.14
+environment and verify installed CLI/version and bundled language resources.
