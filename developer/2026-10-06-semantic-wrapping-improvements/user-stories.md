@@ -13,7 +13,7 @@ The audit found 27 over-width prose lines without a fitting boundary and six
 adjacent pairs of short lines caused by ordered greedy segmentation.
 The remaining over-width lines are protected Markdown content.
 
-This follow-up epic is accepted, dated 2026-10-06. Connector repair is accepted
+This follow-up epic is complete, verified 2026-10-06. Connector repair is accepted
 only when the resulting lines fit within width. Story order expresses the
 preferred review order; implementation dependencies are recorded in
 [tickets.md](tickets.md). No release version is assigned.
@@ -22,9 +22,9 @@ All examples below use width 40 with English and German word splitting and
 extended fallback enabled, except US-01 explicitly disables extended fallback
 to isolate overflow after the reviewed vocabulary additions. Source excerpts
 retain the physical wrapping in
-[mozart.md](../../mozart.md); current excerpts come from the committed
-[mozart-formatted.md](../../mozart-formatted.md). Desired excerpts illustrate
-the proposed behavior, not output from an implemented formatter. Excerpts may
+[mozart.md](../../mozart.md); historical excerpts come from the preserved
+[historical baseline](baseline/mozart-width-40.md). Desired formatting excerpts
+have been verified against the implemented formatter. Excerpts may
 start or end within a paragraph and do not introduce new paragraph boundaries.
 
 ## Shared acceptance criteria
@@ -48,7 +48,7 @@ start or end within a paragraph and do not introduce new paragraph boundaries.
 
 ## US-01: Continue splitting when the first usable boundary exceeds width
 
-**Status:** Accepted.
+**Status:** Done.
 
 **As a** writer, **I want** an over-width sentence split at the nearest safe
 semantic boundary when none fits, **so that** a small width overflow does not
@@ -90,7 +90,7 @@ fester for eight years
 before breaking apart entirely.
 ```
 
-Current formatting (line 76):
+Historical formatting (line 76):
 
 ```markdown
 This relationship would fester for eight years before breaking apart entirely.
@@ -111,7 +111,7 @@ becomes `This relationship would fester`, `for eight years`, and
 
 ## US-02: Avoid isolated connector fragments
 
-**Status:** Accepted only for repairs whose resulting lines fit within width.
+**Status:** Done; repairs only apply when resulting lines fit within width.
 
 **As a** writer, **I want** splitting to avoid leaving a connector alone on
 its own line, **so that** the output preserves readable units of thought.
@@ -160,7 +160,7 @@ emotional and structural clarity that has rarely been
 matched.
 ```
 
-Current formatting (lines 208-212):
+Historical formatting (lines 208-212):
 
 ```markdown
 not because he was the greatest,
@@ -187,7 +187,7 @@ no semantic boundary fits in an over-width remainder.
 
 ## US-03: Improve English and German segmentation vocabularies
 
-**Status:** Accepted.
+**Status:** Done.
 
 **As a** writer of English or German, **I want** well-chosen split terms,
 **so that** long prose has useful boundaries without excessive fragmentation.
@@ -219,13 +219,13 @@ Source (the final clause before the burial sentence):
 is the most commonly cited diagnosis among historians.
 ```
 
-Current formatting (line 182):
+Historical formatting (line 182):
 
 ```markdown
 is the most commonly cited diagnosis among historians.
 ```
 
-Desired formatting if `among` is approved as an English fallback term:
+Verified formatting with the approved English fallback `among`:
 
 ```markdown
 is the most commonly cited diagnosis
@@ -238,7 +238,7 @@ own corpus examples, as specified above.
 
 ## US-04: Recognize additional abbreviations conservatively
 
-**Status:** Accepted.
+**Status:** Done.
 
 **As a** writer, **I want** familiar abbreviated names and titles kept
 together, **so that** abbreviation periods do not create false sentences.
@@ -269,14 +269,14 @@ was buried in a common grave at the St.
 Marx cemetery,
 ```
 
-Current formatting (lines 183-184):
+Historical formatting (lines 183-184):
 
 ```markdown
 He was buried in a common grave at the St.
 Marx cemetery,
 ```
 
-Desired formatting, assuming US-03 also approves `at` as a fallback term:
+Verified formatting with the approved English fallback `at`:
 
 ```markdown
 He was buried in a common grave
@@ -290,7 +290,7 @@ Keeping `St. Marx` together is the abbreviation story's essential requirement.
 
 ## US-05: Explain formatting decisions without disrupting pipelines
 
-**Status:** Accepted.
+**Status:** Done.
 
 **As a** user tuning formatting, **I want** optional explanations of width
 exceptions and selected boundaries, **so that** I can understand the output
@@ -336,7 +336,7 @@ Source:
 | 27 January 1756 | Mozart was born in Salzburg. |
 ```
 
-Current formatting (line 158; no explanation is emitted):
+Historical formatting (line 158; no explanation is emitted):
 
 ```markdown
 | 27 January 1756 | Mozart was born in Salzburg. |
@@ -348,15 +348,14 @@ Desired formatted output with `--explain` remains identical:
 | 27 January 1756 | Mozart was born in Salzburg. |
 ```
 
-Desired accompanying stderr, with wording illustrative of the diagnostic
-contract:
+Verified accompanying stderr in the complete revised corpus:
 
 ```text
-pysembr: explain: output line <N>: 50 characters exceed width 40; protected Markdown table row retained unchanged.
+pysembr: explain: output line 217: 50 characters exceed width 40; protected Markdown table source retained unchanged.
 ```
 
-`<N>` must be the actual line number in the revised output, not the baseline's
-line 158: earlier prose improvements can shift the row's location. This
+The row is now on output line 217 rather than the historical line 158 because
+earlier prose improvements shift its location. This
 example explains a deliberate width exception without changing table source
 or contaminating formatted stdout.
 
@@ -368,10 +367,25 @@ or contaminating formatted stdout.
 4. US-04: Conservative abbreviation improvements.
 5. US-05: Optional formatting explanations.
 
-For the final review, retain the original Mozart audit as the baseline and
-create a new output and audit for the revised behavior. Include English and
-German regression examples beyond Mozart, confirm idempotence and Markdown
-preservation, and document any deliberate changes to the 2.0.0 contract.
+The final review retains the original Mozart audit as the baseline and records
+new output/audit evidence for the revised behavior. English/German regressions
+beyond Mozart confirm idempotence, Markdown preservation and the accepted
+changes to the original 2.0.0 contract.
 
 Protected YAML, tables, and HTML blocks remain unchanged. General short-line
 packing and arbitrary whitespace wrapping are outside this epic.
+
+### Final acceptance evidence
+
+All five stories are complete. The [new corpus audit](mozart-width-40-audit.md)
+explains all 30 over-width lines and all 39 fitting adjacent pairs, and
+reconciles all 35 [actual explanation records](mozart-width-40-explanations.txt).
+Independent English/German public regressions cover reviewed words, controls,
+connector repairs, overflow and conservative abbreviations. The test acceptance
+map is maintained in [tests/README.md](../../tests/README.md).
+
+All five story formatting excerpts have been verified at their specified
+options. US-01 explicitly uses `--no-extended`; the revised default vocabulary
+has an earlier fitting `for` boundary. The diagnostic excerpt is exact final
+stderr. Wording, protected source, idempotence and supported rendered meaning
+remain verified. No algorithm or inventory decision remains unresolved.

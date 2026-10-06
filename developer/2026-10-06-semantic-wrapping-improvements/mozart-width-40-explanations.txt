@@ -1,0 +1,35 @@
+pysembr: explain: output line 2: 44 characters exceed width 40; protected Markdown front matter source retained unchanged.
+pysembr: explain: output line 6: 69 characters exceed width 40; protected Markdown front matter source retained unchanged.
+pysembr: explain: output line 7: 65 characters exceed width 40; protected Markdown front matter source retained unchanged.
+pysembr: explain: output line 12: 60 characters exceed width 40; protected inline source cannot be split.
+pysembr: explain: output line 12: 60 characters exceed width 40; nearest eligible semantic overflow boundary retained.
+pysembr: explain: output line 35: 58 characters exceed width 40; nearest eligible semantic overflow boundary retained.
+pysembr: explain: output line 55: 47 characters exceed width 40; nearest eligible semantic overflow boundary retained.
+pysembr: explain: output line 67: 48 characters exceed width 40; nearest eligible semantic overflow boundary retained.
+pysembr: explain: output line 74: 45 characters exceed width 40; nearest eligible semantic overflow boundary retained.
+pysembr: explain: output line 79: 45 characters exceed width 40; no eligible semantic boundary remains.
+pysembr: explain: output line 81: 47 characters exceed width 40; nearest eligible semantic overflow boundary retained.
+pysembr: explain: output line 124: 43 characters exceed width 40; no eligible semantic boundary remains.
+pysembr: explain: output line 146: 43 characters exceed width 40; nearest eligible semantic overflow boundary retained.
+pysembr: explain: output line 149: 44 characters exceed width 40; nearest eligible semantic overflow boundary retained.
+pysembr: explain: output line 151: 46 characters exceed width 40; nearest eligible semantic overflow boundary retained.
+pysembr: explain: output line 156: 43 characters exceed width 40; nearest eligible semantic overflow boundary retained.
+pysembr: explain: output line 168: 43 characters exceed width 40; nearest eligible semantic overflow boundary retained.
+pysembr: explain: output line 170: 54 characters exceed width 40; nearest eligible semantic overflow boundary retained.
+pysembr: explain: output line 181: 48 characters exceed width 40; no eligible semantic boundary remains.
+pysembr: explain: output line 185: Rejected boundary because the continuation could create a Markdown block.
+pysembr: explain: output lines 186-187: Mandatory sentence boundary retained although the adjacent lines fit together.
+pysembr: explain: output line 217: 50 characters exceed width 40; protected Markdown table source retained unchanged.
+pysembr: explain: output line 218: 75 characters exceed width 40; protected Markdown table source retained unchanged.
+pysembr: explain: output line 219: 77 characters exceed width 40; protected Markdown table source retained unchanged.
+pysembr: explain: output line 220: 53 characters exceed width 40; protected Markdown table source retained unchanged.
+pysembr: explain: output line 221: 73 characters exceed width 40; protected Markdown table source retained unchanged.
+pysembr: explain: output line 222: 43 characters exceed width 40; protected Markdown table source retained unchanged.
+pysembr: explain: output line 223: 64 characters exceed width 40; protected Markdown table source retained unchanged.
+pysembr: explain: output line 224: 73 characters exceed width 40; protected Markdown table source retained unchanged.
+pysembr: explain: output line 229: 70 characters exceed width 40; protected Markdown table source retained unchanged.
+pysembr: explain: output line 231: 60 characters exceed width 40; protected Markdown HTML block source retained unchanged.
+pysembr: explain: output line 232: 72 characters exceed width 40; protected Markdown HTML block source retained unchanged.
+pysembr: explain: output line 233: 61 characters exceed width 40; protected Markdown HTML block source retained unchanged.
+pysembr: explain: output lines 252-253: Mandatory sentence boundary retained although the adjacent lines fit together.
+pysembr: explain: output line 268: Isolated connector joined to its preceding segment within width.

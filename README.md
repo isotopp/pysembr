@@ -293,3 +293,15 @@ The completed [design](developer/2026-10-06-version-2/design-v2.md),
 [tickets](developer/2026-10-06-version-2/tickets.md) record the implementation
 contract. [Tests and acceptance coverage](tests/README.md) describe validation
 and its limits. Historical releases remain available in Git history.
+
+## Verified semantic wrapping improvements
+
+The [completed epic](developer/2026-10-06-semantic-wrapping-improvements/user-stories.md)
+adds semantic overflow, width-respecting connector repair, reviewed split words,
+`St.` handling and opt-in explanations. The
+[new width-40 Mozart audit](developer/2026-10-06-semantic-wrapping-improvements/mozart-width-40-audit.md)
+explains all 30 remaining long lines and all 39 adjacent pairs that fit together.
+Compared with the historical corpus output, long prose lines decrease from
+27 to 15; protected Markdown remains unchanged. The
+[captured explanations](developer/2026-10-06-semantic-wrapping-improvements/mozart-width-40-explanations.txt)
+identify final output locations without changing formatted stdout.

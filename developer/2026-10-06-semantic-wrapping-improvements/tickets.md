@@ -2,7 +2,7 @@
 
 ## Contract and workflow
 
-Implement the accepted [user stories](user-stories.md). T01 and T07 are Done; other tickets are Todo.
+Implement the accepted [user stories](user-stories.md). T01-T09 are Done. T10 is the pending editor-setup documentation follow-up.
 The existing formatter and the
 [original Mozart audit](../2026-10-06-version-2/mozart-width-40-audit.md)
 are the baseline. Do not change the historical audit to describe new behavior.
@@ -41,6 +41,7 @@ order, not an obligation to finish unrelated tickets sequentially.
 | T07 | Diagnostic interface, rendering, and option parsing | US-05 | T01 | T02 through T06 |
 | T08 | Capture final decisions and integrate explanations | US-05 | T02, T04, T05, T06, T07 | None |
 | T09 | Corpus audit, documentation, and integrated verification | All | T08 | None |
+| T10 | PyCharm/IntelliJ Shellfilter setup documentation | Editor follow-up | T09 | None |
 
 Critical formatter path: T01 -> T02 -> T04 -> T05 -> T08 -> T09.
 T03 must also finish before T04. T06 and T07 can progress independently after
@@ -372,7 +373,7 @@ localized, inspect merges, and retain both sets of approved data.
 
 ## T09: Complete integrated corpus verification and documentation
 
-**Status:** Todo. **Dependencies:** T08. **Stories:** All.
+**Status:** Done. **Dependencies:** T08. **Stories:** All.
 
 ### Work
 
@@ -403,3 +404,39 @@ localized, inspect merges, and retain both sets of approved data.
 - Current output, new audit, diagnostic output, and documentation agree.
 - Implementation commits are integrated and completed worktrees/branches are
   removed. Release versioning/publication remains outside this epic.
+
+### Completion evidence
+
+- Ran the exact width-40 installed command and its `--explain` counterpart.
+  Output is 271 lines, with 30 over width and maximum width 77; the stdout
+  outputs are byte-identical. Effective configuration has no overrides.
+- Recorded [mozart-width-40-audit.md](mozart-width-40-audit.md): independently
+  explains all 30 long lines and all 39 adjacent pairs at most 40 characters,
+  including three exact fits, and reconciles all 35
+  [captured explanation records](mozart-width-40-explanations.txt).
+- Verified word order, exact protected source, final newline, idempotence and
+  independently rendered Markdown meaning. Historical audit/baseline unchanged.
+  Existing public CLI/report regressions cover runtime; no duplicate tests added.
+- Updated completed story examples/status, tests' acceptance map, README epic
+  references and concise AGENTS pointers to the superseding follow-up contract.
+- Additional integration evidence: 84 formatting-invariant combinations and
+  96 report-projection probes passed. Full pytest (331 tests), Ruff, ty and
+  lockfile checks pass. Root re-runs the exact command using primary-checkout
+  configuration after integration, then removes completed ticket worktrees.
+
+## T10: Document PyCharm/IntelliJ Shellfilter setup
+
+**Status:** Todo. **Dependencies:** T09. **Stories:** User editor follow-up.
+
+### Work
+
+- Add concise README instructions for formatting the editor selection through
+  the Shellfilter plugin using the project's installed `pysembr` command.
+- Verify plugin configuration guidance against its current primary documentation;
+  explain command paths, stdin/stdout replacement and width/configuration choices.
+- Leave versioning and publication outside this documentation follow-up.
+
+### Done when
+
+- PyCharm/IntelliJ users can configure the formatter from the README, with
+  accurate plugin terminology and a copyable command example.
