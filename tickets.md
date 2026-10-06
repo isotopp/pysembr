@@ -191,6 +191,18 @@ until T14; release version metadata is finalized in T16.
 
 **Depends on:** T04. **Unblocks:** T08, T09, T14.
 
+**Status:** Done. Effective argparse/INI options, ordered section/file selection,
+CLI precedence and diagnostics, canonical English/German selection, approved
+packaged vocabulary with per-language replacements, and Unicode-aware whole-word
+candidates implemented. Configured overlaps remain in the primary category.
+Help/version bypass configuration; runtime CLI wiring remains T14.
+
+**Validation:** Public options/vocabulary TDD red/green slices with the full
+`uv run pytest` suite on every cycle; final suite 45 passed on Python 3.14.2.
+Ruff format/check and mypy passed. Tests cover literal INI paths, inherited
+defaults, explicit selection, invalid values/keys, aliases, empty replacements,
+exact approved spellings, casefold matching and hyphenated-word exclusions.
+
 ### Tasks
 
 - Implement the T01 options model and configuration precedence.
