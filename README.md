@@ -262,6 +262,64 @@ existing terminator, otherwise the document's first terminator, otherwise LF.
 Mixed endings remain outside rewritten spans. Final-newline presence is
 preserved: `First. Second.` becomes `First.\nSecond.` without adding a final LF.
 
+## PyCharm and other IntelliJ editors
+
+Run `uv sync` in your pysembr checkout first. This creates the installed command
+at `.venv/bin/pysembr` on macOS/Linux, or `.venv\Scripts\pysembr.exe` on Windows.
+For Python development in PyCharm, also select the existing `.venv` interpreter
+in the IDE's Python interpreter settings.
+
+1. Open **Settings > Plugins > Marketplace**, search for
+   [ShellFilter](https://plugins.jetbrains.com/plugin/9958-shellfilter)
+   by Dennis Plöger, and install it. Restart if prompted, following the
+   [JetBrains plugin installation guide](https://www.jetbrains.com/help/pycharm/managing-plugins.html).
+2. Open **Settings > Tools > Shellfilter settings**. On macOS/Linux, set
+   **Shell command** to `/bin/sh`, without `%s` or `-c`. Shellfilter appends
+   the path of its temporary command script automatically; see its
+   [configuration guide](https://github.com/dploeger/idea-shellfilter#configuration).
+3. Add a named command such as `pysembr (75 columns)`, with this script:
+
+   ```sh
+   cd "/absolute/path/to/writing-project" || exit
+   exec "/absolute/path/to/pysembr/.venv/bin/pysembr" --width 75 --languages en,de
+   ```
+
+   Replace both paths. The first selects the working directory for `.sembr`
+   discovery; the second locates the installed executable independently of
+   the IDE's PATH. Change the width/languages or add `--config-file` as needed.
+   Keep stdin and stdout available for the plugin; omit file options and
+   output redirection.
+4. Leave **Trim trailing newlines** unchecked and save the command. Despite
+   its name, that option trims leading whitespace too, which can remove list
+   indentation; the plugin's
+   [filter implementation](https://github.com/dploeger/idea-shellfilter/blob/main/src/main/java/de/dieploegers/develop/idea/shellfilter/FilterAction.java)
+   shows its trimming and replacement behavior.
+5. Select the whole document with **Select All**, or select a complete Markdown
+   paragraph/list block. Choose **Edit > Shell Filter**, then your named command.
+   Successful stdout replaces the selection. Always select text: without a
+   selection the plugin inserts output at the caret instead of replacing the
+   document.
+
+For example, selecting `- First. Second.` produces:
+
+```markdown
+- First.
+  Second.
+```
+
+On Windows, install Git Bash and use its full executable path, for example
+`C:\Program Files\Git\bin\bash.exe`, as **Shell command**, without surrounding
+quotes or `%s`. Use forward-slash paths inside the saved shell script:
+
+```sh
+cd "C:/absolute/path/to/writing-project" || exit
+exec "C:/absolute/path/to/pysembr/.venv/Scripts/pysembr.exe" --width 75 --languages en,de
+```
+
+Use `--show-options` in a terminal from the chosen working directory to inspect
+configuration. Run `--explain` there when investigating formatting decisions;
+the editor command should keep its normal stdout replacement behavior.
+
 ## Migration and development
 
 2.0.0 replaces the old implementation and tests; backward compatibility is not

@@ -2,7 +2,7 @@
 
 ## Contract and workflow
 
-Implement the accepted [user stories](user-stories.md). T01-T09 are Done. T10 is the pending editor-setup documentation follow-up.
+Implement the accepted [user stories](user-stories.md). T01-T10 are Done, including the editor-setup documentation follow-up.
 The existing formatter and the
 [original Mozart audit](../2026-10-06-version-2/mozart-width-40-audit.md)
 are the baseline. Do not change the historical audit to describe new behavior.
@@ -426,7 +426,7 @@ localized, inspect merges, and retain both sets of approved data.
 
 ## T10: Document PyCharm/IntelliJ Shellfilter setup
 
-**Status:** Todo. **Dependencies:** T09. **Stories:** User editor follow-up.
+**Status:** Done. **Dependencies:** T09. **Stories:** User editor follow-up.
 
 ### Work
 
@@ -440,3 +440,21 @@ localized, inspect merges, and retain both sets of approved data.
 
 - PyCharm/IntelliJ users can configure the formatter from the README, with
   accurate plugin terminology and a copyable command example.
+
+### Completion evidence
+
+- Added README installation and named-command setup for PyCharm and other
+  IntelliJ editors, including absolute executable paths, configuration working
+  directory, macOS/Linux shell and Windows Git Bash examples.
+- Checked plugin terminology and selection/trimming behavior against current
+  upstream documentation/source and JetBrains installation guidance. The
+  documented POSIX script was smoke-tested against the installed command:
+  list continuation indentation and final newline are preserved. IDE UI and
+  Windows execution were not automated.
+- Re-ran the exact width-40 Mozart command in the primary checkout after
+  integration. Its bytes match the committed golden output and audit hash;
+  explained stdout and all 35 stderr records match the committed capture.
+- Final full suite: 332 tests passed, including the report-only leading-BOM
+  width regression added after T09's initial verification. Ruff format/check,
+  `ty check src tests`, and lockfile checks passed. All implementation tickets
+  were committed, merged, and their worktrees/branches removed.
