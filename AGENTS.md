@@ -11,9 +11,19 @@ contract. Use [user-stories.md](developer/2026-10-06-version-2/user-stories.md) 
 [tickets.md](developer/2026-10-06-version-2/tickets.md) for implementation order, dependencies, and status.
 T01-T16 are complete; preserve the delivered behavior when making changes.
 
+Before changing overflow selection, connector repair, split inventories,
+abbreviations or explanations, read the
+[semantic wrapping contract](developer/2026-10-06-semantic-wrapping-improvements/implementation-contract.md)
+and its [completed stories](developer/2026-10-06-semantic-wrapping-improvements/user-stories.md).
+That accepted follow-up supersedes the original design in those areas; its
+[tickets](developer/2026-10-06-semantic-wrapping-improvements/tickets.md) record validation and status.
+
 The rewrite replaced legacy source and tests with contract-derived modules
 and regression tests. Use [language-data-v2.json](developer/2026-10-06-version-2/language-data-v2.json)
-for the explicitly approved language inventories and aliases. Legacy code,
+for the original approved language baseline and aliases. For current word or
+abbreviation data changes, consult the follow-up epic's
+[language review](developer/2026-10-06-semantic-wrapping-improvements/language-review.md) and
+[abbreviation review](developer/2026-10-06-semantic-wrapping-improvements/abbreviation-review.md). Legacy code,
 tests, and README behavior are not specifications for the rewrite. Git history
 preserves the old release.
 

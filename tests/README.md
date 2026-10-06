@@ -7,6 +7,8 @@ The user confirmed the public seams in
 - Effective options/configuration and language selection.
 - `parse_document`, `format_paragraph`, `format_text`, `validate_replacements`, and
   `apply_replacements`, tested with original source and exact expected output.
+- `format_report`, diagnostic records/rendering and final output locations,
+  accepted in the semantic wrapping improvement contract.
 - `SourceDocument` byte transport and atomic file output, including failure paths.
 
 Use the full `uv run pytest` suite for each red/green cycle. Work in vertical
@@ -49,6 +51,27 @@ The installed command also formats this fixture in place with its UTF-8 BOM.
 `test_document_io.py` tests encoded pipelines with mixed endings and no final
 newline, then injects failures at actual filesystem boundaries while running
 the CLI entry point. It does not replace formatter or transport collaborators.
+
+## Semantic wrapping improvement acceptance coverage
+
+The completed [follow-up stories](../developer/2026-10-06-semantic-wrapping-improvements/user-stories.md)
+extend the original contract at the same public seams.
+
+| Story | Verification |
+| --- | --- |
+| US-01: Semantic overflow | `test_segments.py`: fitting priority, nearest overflow, prefixes, repeated overflow, custom/disabled categories and idempotence; `test_reports.py`: retained overflow locations |
+| US-02: Connector repair | `test_connectors.py`: following preference, preceding fallback, exact widths, repeated connectors, containers/hard breaks, enabled-language primary intersections and Markdown recovery |
+| US-03: Reviewed words | `test_reviewed_languages.py`: independent English/German additions and category moves, case/whole words, protected/hyphen exclusions, aliases, mixed languages, replacement semantics, disabled categories and adverse lexical examples |
+| US-04: Abbreviations | `test_sentences.py`: St. Marx, language overrides, conservative true-ending ambiguity, initials, punctuation clusters, decimals and protected spans |
+| US-05: Explanations | `test_diagnostics.py`, `test_reports.py`, `test_cli.py`: typed rendering, options/inspection, final locations/widths, protected multiline source, rejections/recovery, output equality and stream/file/error behavior |
+
+The [new Mozart audit](../developer/2026-10-06-semantic-wrapping-improvements/mozart-width-40-audit.md)
+independently explains every over-width line and fitting adjacent pair, and
+reconciles the [captured stderr](../developer/2026-10-06-semantic-wrapping-improvements/mozart-width-40-explanations.txt)
+with actual final output. The installed CLI golden verifies the current output;
+the historical corpus output/audit remain separate. The full suite passes with
+331 tests. T09 added verification evidence instead of tests duplicating those
+already-covered public paths.
 
 ## Rendered-meaning checks and limits
 
