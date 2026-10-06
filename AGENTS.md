@@ -5,21 +5,21 @@
 This repository contains `pysembr`, a pipeline-friendly Python CLI for
 Markdown-aware semantic line breaking. The 2.0.0 rewrite targets Python 3.14+.
 
-Before implementing or reviewing 2.0.0 behavior, read [design-v2.md](design-v2.md)
+Before implementing or reviewing 2.0.0 behavior, read [design-v2.md](developer/2026-10-06-version-2/design-v2.md)
 for the confirmed CLI, configuration, Markdown dialect, splitting, and file-I/O
-contract. Use [user-stories.md](user-stories.md) for acceptance criteria and
-[tickets.md](tickets.md) for implementation order, dependencies, and status.
+contract. Use [user-stories.md](developer/2026-10-06-version-2/user-stories.md) for acceptance criteria and
+[tickets.md](developer/2026-10-06-version-2/tickets.md) for implementation order, dependencies, and status.
 T01-T03 are confirmed and complete; T04 begins the implementation.
 
 At T04, remove all legacy source and tests and create fresh modules and tests
-from the confirmed contract. Use [language-data-v2.json](language-data-v2.json)
+from the confirmed contract. Use [language-data-v2.json](developer/2026-10-06-version-2/language-data-v2.json)
 for the explicitly approved language inventories and aliases. Legacy code,
 tests, and README behavior are not specifications for the rewrite. Git history
 preserves the old release.
 
 When implementing the Markdown adapter, read
-[parser-research.md](parser-research.md) for primary sources and limitations.
-[parser-probe.py](parser-probe.py) is research evidence; implement production
+[parser-research.md](developer/2026-10-06-version-2/parser-research.md) for primary sources and limitations.
+[parser-probe.py](developer/2026-10-06-version-2/parser-probe.py) is research evidence; implement production
 mapping independently with appropriate regression tests.
 
 ## Coding standards

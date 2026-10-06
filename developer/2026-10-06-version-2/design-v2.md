@@ -355,7 +355,7 @@ separate original-source ownership, not a complete encoded-file round trip.
 
 All design prerequisites are confirmed. Start T04 from the committed contract:
 
-1. Delete the complete legacy `src/` and `tests/` trees; create fresh modules and
+1. Delete the complete legacy `../../src` and `tests/` trees; create fresh modules and
    meaningful tests derived from this contract and the fixture plan.
 2. Set `requires-python = ">=3.14"`, pin the development interpreter to Python
    3.14 with uv, and recreate the environment/lockfile through uv. Remove stale

@@ -3,9 +3,9 @@
 pysembr is being rewritten for version 2.0.0 as a Markdown-aware semantic
 line-breaking command. The implementation requires Python 3.14 or newer.
 
-The confirmed behavior is specified in [design-v2.md](design-v2.md), acceptance
-criteria in [user-stories.md](user-stories.md), and delivery order in
-[tickets.md](tickets.md).
+The confirmed behavior is specified in [design-v2.md](developer/2026-10-06-version-2/design-v2.md), acceptance
+criteria in [user-stories.md](developer/2026-10-06-version-2/user-stories.md), and delivery order in
+[tickets.md](developer/2026-10-06-version-2/tickets.md).
 
 ## Current implementation stage
 

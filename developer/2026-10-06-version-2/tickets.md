@@ -165,7 +165,7 @@ until T14; release version metadata is finalized in T16.
 
 - Establish small typed interfaces for options, source blocks, prose spans,
   formatting, and I/O using the selected parsing approach.
-- Delete all legacy `src/` and `tests/` content at the start. Create fresh source
+- Delete all legacy `../../src` and `tests/` content at the start. Create fresh source
   and tests from the confirmed contract, keeping the package installable and
   retaining the `pysembr` entry point. Do not port legacy implementation or tests.
 - Use the approved [language data](language-data-v2.json); retain no other old
@@ -181,7 +181,7 @@ until T14; release version metadata is finalized in T16.
 ### Done when
 
 - The new package structure imports and its meaningful initial tests pass.
-- No legacy source or tests remain under `src/` or `tests/`; package metadata,
+- No legacy source or tests remain under `../../src` or `tests/`; package metadata,
   interpreter selection, and quality gates use Python 3.14+.
 - Public interfaces are typed and allow paragraph logic to be tested without
   filesystem or CLI setup.

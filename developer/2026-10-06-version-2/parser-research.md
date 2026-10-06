@@ -96,7 +96,7 @@ unless bare-URL autolinking becomes part of the selected syntax profile.
 Mistune's inspected metadata requires Python >=3.10 and adds typing-extensions
 only below Python 3.11. Python-Markdown's inspected metadata requires >=3.11 and
 declares no mandatory runtime dependencies. These are upstream branch facts;
-resolve actual release versions with `uv add` and record them in `uv.lock`.
+resolve actual release versions with `uv add` and record them in `../../uv.lock`.
 [Mistune metadata](https://raw.githubusercontent.com/lepture/mistune/main/pyproject.toml),
 [Python-Markdown metadata](https://raw.githubusercontent.com/Python-Markdown/markdown/master/pyproject.toml)
 
