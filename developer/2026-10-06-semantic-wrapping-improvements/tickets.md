@@ -131,7 +131,7 @@ algorithm stabilizes, preventing vocabulary changes from obscuring T02/T04.
 
 ## T03: Review split words and define connector eligibility
 
-**Status:** Todo. **Dependencies:** T01. **Stories:** US-02, US-03.
+**Status:** Done. **Dependencies:** T01. **Stories:** US-02, US-03.
 
 ### Work
 
@@ -155,6 +155,17 @@ algorithm stabilizes, preventing vocabulary changes from obscuring T02/T04.
 - The connector subset and customization behavior are concrete enough for
   T04 to implement without interpreting general grammar.
 - English and German recommendations are documented separately.
+
+### Completion evidence
+
+- Recorded [language-review.md](language-review.md) with independent useful
+  and adverse English/German examples for each reviewed addition/category
+  move, fixed language-specific connector subsets and replacement semantics.
+- Supplied exact isolated-vocabulary formatter probes, including nested-list
+  prefix widths, controlled overflow and English/German preceding-neighbor
+  repairs. Measured example widths and checked baseline candidate plans using
+  the public formatter. T04/T05 own runtime implementation and final regression
+  validation; this documentation ticket changes no runtime data or tests.
 
 ## T04: Repair isolated connectors only when joined lines fit
 
