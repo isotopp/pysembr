@@ -51,6 +51,19 @@ def test_language_inspection_lists_canonical_names_without_reading_input(
     assert result.stderr == b""
 
 
+def test_explanation_inspection_does_not_read_input_or_emit_decisions(
+    run_cli: CliRunner,
+):
+    result = run_cli("--explain", "--show-options", "--infile", "missing.md")
+    assert result.returncode == 0
+    assert json.loads(result.stdout)["explain"] is True
+    assert result.stderr == b""
+    languages = run_cli("--explain", "--list-languages", "--infile", "missing.md")
+    assert languages.stdout == b"english\ngerman\n"
+    assert languages.returncode == 0
+    assert languages.stderr == b""
+
+
 def test_options_inspection_reports_effective_values_and_selected_config(
     run_cli: CliRunner,
     tmp_path: Path,

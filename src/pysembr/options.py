@@ -73,6 +73,12 @@ def argument_parser() -> argparse.ArgumentParser:
         help="Print effective options and selected INI section as JSON, then exit.",
     )
     parser.add_argument(
+        "--explain",
+        action="store_true",
+        default=argparse.SUPPRESS,
+        help="Explain formatting exceptions on stderr (CLI only; default: off).",
+    )
+    parser.add_argument(
         "--version", action="version", version=f"pysembr {version('pysembr')}"
     )
     return parser

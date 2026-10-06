@@ -2,7 +2,7 @@
 
 ## Contract and workflow
 
-Implement the accepted [user stories](user-stories.md). T01 is Done; T02-T09 are Todo.
+Implement the accepted [user stories](user-stories.md). T01 and T07 are Done; other tickets are Todo.
 The existing formatter and the
 [original Mozart audit](../2026-10-06-version-2/mozart-width-40-audit.md)
 are the baseline. Do not change the historical audit to describe new behavior.
@@ -218,7 +218,7 @@ localized, inspect merges, and retain both sets of approved data.
 
 ## T07: Establish diagnostic values, stderr rendering, and CLI parsing
 
-**Status:** Todo. **Dependencies:** T01. **Story:** US-05.
+**Status:** Done. **Dependencies:** T01. **Story:** US-05.
 
 ### Work
 
@@ -238,6 +238,16 @@ localized, inspect merges, and retain both sets of approved data.
 - T08 can consume the diagnostic seam without changing its agreed interface.
 - Help/options describe the flag and the focused public seams are tested.
 - Quality gates pass; normal output paths retain their behavior.
+
+### Completion evidence
+
+- Added immutable Diagnostic/FormattingReport values and deterministic stderr
+  rendering; records distinguish single-line/range locations and explicitly
+  rejected proposals.
+- Added CLI-only --explain, default off, show-options visibility, and no-read
+  inspection coverage. Actual decision capture remains T08.
+- Vertical red/green at public renderer and options seams; full suite 249
+  passed, Ruff format/check passed, ty src/tests passed.
 
 ## T08: Capture final formatter decisions and emit explanations
 
