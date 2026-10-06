@@ -259,6 +259,22 @@ tabs, BOM/CRLF/mixed endings, missing final newline, and malformed constructs.
 
 **Depends on:** T06. **Unblocks:** T08, T10.
 
+**Status:** Done. Inline parser-rule positions map code, complete links/images,
+HTML, math, footnotes, escapes/entities, and conservative bare URLs to logical
+source offsets. Parsed hard breaks retain their original markers/newlines;
+physical source metadata preserves indentation inside multiline atomic spans.
+Local line-start screening and full replacement validation reject changed
+Markdown structure, inline meaning, protected literals, task/list state,
+markers, endings, or blank-line counts. Formatting and break retry policy remain
+T08-T12 work.
+
+**Validation:** Public-seam TDD red/green cycles cover repeated markup offsets,
+semantic hard breaks, URLs/closing punctuation, raw multiline source, structural
+validation, protected spelling, inline footnotes, and blank-line invariants.
+Full `uv run pytest` (28 passed), Ruff format/check, and mypy pass on Python
+3.14.2. Regression cases include reference links/images, CRLF, escapes, nested
+list content, footnote rendering, raw HTML, and 300 independent paragraphs.
+
 ### Tasks
 
 - Locate inline code, link destinations, URLs, and other T02-protected spans

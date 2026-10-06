@@ -1,8 +1,10 @@
 """Source-preserving block adapter for the selected Markdown dialect."""
 
 import re
+import json
 
 from markdown_it import MarkdownIt
+from markdown_it.token import Token
 from markdown_it.rules_block import StateBlock
 from markdown_it.rules_block.paragraph import paragraph
 from mdit_py_plugins.deflist import deflist_plugin
@@ -10,7 +12,9 @@ from mdit_py_plugins.dollarmath import dollarmath_plugin
 from mdit_py_plugins.footnote import footnote_plugin
 from mdit_py_plugins.front_matter import front_matter_plugin
 
-from pysembr.models import ParagraphSource, ParsedDocument
+from pysembr.inline import protect_paragraph
+from pysembr.models import ParagraphSource, ParsedDocument, Replacement
+from pysembr.source import apply_replacements
 
 
 def create_parser(render: bool = False) -> MarkdownIt:
@@ -107,10 +111,122 @@ def parse_document(text: str) -> ParsedDocument:
                 ),
                 trailing_ending=endings[stop - 1],
                 logical_to_source=tuple(positions),
+                original_source=text[
+                    first.start() + (bom if start == 0 else 0) : lines[stop - 1].end()
+                ],
             )
         )
         return result
 
     parser.block.ruler.at("paragraph", capture)
-    parser.parse(view)
-    return ParsedDocument(text, tuple(paragraphs), view)
+    environment: dict = {}
+    parser.parse(view, environment)
+    mapped = tuple(
+        protect_paragraph(p, create_parser(), environment) for p in paragraphs
+    )
+    return ParsedDocument(text, mapped, view)
+
+
+def _inline_signature(tokens: list[Token]) -> tuple[object, ...]:
+    result: list[object] = []
+    prose = ""
+
+    def flush() -> None:
+        nonlocal prose
+        if prose:
+            result.append(("text", re.sub(r"[ \t\n]+", " ", prose)))
+            prose = ""
+
+    for token in tokens:
+        if token.type in {"text", "text_special"}:
+            prose += token.content
+        elif token.type == "softbreak":
+            prose += " "
+        else:
+            flush()
+            result.append(_token_signature(token))
+    flush()
+    return tuple(result)
+
+
+def _token_signature(token: Token) -> tuple[object, ...]:
+    return (
+        token.type,
+        token.tag,
+        token.nesting,
+        token.hidden,
+        tuple(sorted(token.attrs.items())),
+        json.dumps(token.meta, sort_keys=True),
+        "" if token.type == "inline" else token.content,
+        _inline_signature(token.children) if token.children is not None else (),
+    )
+
+
+def semantic_signature(text: str) -> tuple[object, ...]:
+    """Compare rendered semantics while normalizing only ordinary prose spaces."""
+    return tuple(
+        _token_signature(token) for token in create_parser(render=True).parse(text)
+    )
+
+
+def validate_replacements(
+    document: ParsedDocument, replacements: list[Replacement]
+) -> bool:
+    """Reject edits that alter source outside prose or change Markdown semantics."""
+    if any(
+        not any(p.start <= edit.start <= edit.end <= p.end for p in document.paragraphs)
+        for edit in replacements
+    ):
+        return False
+    try:
+        proposed = apply_replacements(document.text, replacements)
+    except ValueError:
+        return False
+    old_lines = document.text.replace("\r\n", "\n").replace("\r", "\n")
+    new_lines = proposed.replace("\r\n", "\n").replace("\r", "\n")
+    if len(re.findall(r"(?m)^[ \t]*\n", old_lines)) != len(
+        re.findall(r"(?m)^[ \t]*\n", new_lines)
+    ):
+        return False
+    reparsed = parse_document(proposed)
+    if len(document.paragraphs) != len(reparsed.paragraphs):
+        return False
+    for old, new in zip(document.paragraphs, reparsed.paragraphs, strict=True):
+        if (old.first_prefix, old.trailing_ending) != (
+            new.first_prefix,
+            new.trailing_ending,
+        ):
+            return False
+        if _protected_source(old) != _protected_source(new):
+            return False
+    return semantic_signature(document.text) == semantic_signature(proposed)
+
+
+def _protected_source(paragraph: ParagraphSource) -> tuple[str, ...]:
+    spans = sorted(paragraph.protected_ranges + paragraph.hard_breaks)
+    return tuple(
+        paragraph.original_source[
+            paragraph.logical_to_source[start]
+            - paragraph.start : paragraph.logical_to_source[end - 1]
+            - paragraph.start
+            + 1
+        ]
+        for start, end in spans
+    )
+
+
+def safe_line_start(text: str) -> bool:
+    """Screen logical continuation text before reparsing its full container."""
+    if re.match(r"(?: {4}|\t)", text):
+        return False
+    line = text.lstrip(" ")
+    if re.fullmatch(r"(?:=+|-+)[ \t]*", line):
+        return False
+    if re.match(
+        r"(?:#{1,6}(?:\s|$)|[-+*]\s|\d{1,9}[.)]\s|>|`{3}|~{3}|[:~]\s|\[.+?\]:|\$\$|<)",
+        line,
+    ):
+        return False
+    return not any(
+        re.fullmatch(rf"(?:{re.escape(marker)}[ \t]*){{3,}}", line) for marker in "-*_"
+    )
