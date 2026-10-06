@@ -1,7 +1,7 @@
 """T03 experiment, not the 2.0.0 formatter.
 
 Run: uv run --no-project --with markdown-it-py==4.2.0 \
-    --with mdit-py-plugins==0.6.1 python parser-probe.py
+    --with mdit-py-plugins==0.6.1 python developer/2026-10-06-version-2/parser-probe.py
 """
 
 from __future__ import annotations

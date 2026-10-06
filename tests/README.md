@@ -12,7 +12,7 @@ The user confirmed the public seams in
 Use the full `uv run pytest` suite for each red/green cycle. Work in vertical
 slices: failing public behavior, minimal implementation, then the next behavior.
 The source-splice fixtures assert protected Markdown and original line endings
-verbatim. Later parser/formatter fixtures build on these confirmed seams.
+verbatim. Parser/formatter fixtures exercise these confirmed seams.
 
 Use pytest's `tmp_path` for real filesystem behavior. Inject failures only at
 system boundaries using pytest's `monkeypatch` fixture (file reads/writes,
@@ -39,7 +39,7 @@ The [epic](../developer/2026-10-06-version-2/user-stories.md) and
 | US-07: English/German data | `test_options.py`, `test_segments.py`, `test_cli.py`: approved inventories, aliases, whole words/case, overrides, precedence and language flags |
 | US-08: Bullet/numbered lists | `test_lists.py`: nesting, numbering, item paragraphs, task states, tabs/lazy lines, prefix widths, tight/loose spacing and protected children |
 | US-09: Definitions | `test_definitions.py`: colon/tilde markers, exact terms, multiple definitions, nesting, protected children and widths |
-| US-10: Verified release | All tests and quality gates; installed version is tested in `test_cli.py`. Final release documentation and fresh wheel/sdist installation remain T16. |
+| US-10: Verified release | All tests and quality gates; installed version is tested in `test_cli.py`. README examples and fresh wheel/sdist installation are verified in T16. |
 
 `test_documents.py` includes a worked mixed-document exact-output fixture and
 [mozart.md](../mozart.md), which remains an irregular input fixture. Mozart

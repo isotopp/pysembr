@@ -26,10 +26,13 @@ def test_installed_version_matches_distribution_metadata(run_cli: CliRunner):
     assert result.stderr == b""
 
 
-def test_installed_release_reports_version_two(run_cli: CliRunner):
+def test_installed_version_matches_project_metadata(run_cli: CliRunner):
+    import tomllib
+
+    metadata = tomllib.loads((Path(__file__).parents[1] / "pyproject.toml").read_text())
     result = run_cli("--version")
     assert result.returncode == 0
-    assert result.stdout == b"pysembr 2.0.0\n"
+    assert result.stdout == f"pysembr {metadata['project']['version']}\n".encode()
 
 
 def test_installed_command_formats_stdin_to_stdout(run_cli: CliRunner):

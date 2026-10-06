@@ -13,15 +13,15 @@ metadata/concurrency/durability requirements, and prefer an external Markdown
 parser whose syntax we adopt.
 
 The user confirmed this contract on 2026-10-06. **T01-T03 are Done.**
-The implementation targets **Python 3.14+**. T04 starts by removing all legacy
-source and tests and creating the implementation from this contract. Reuse only
+The implementation targets **Python 3.14+**. T04 removed all legacy
+source and tests and created the implementation from this contract. Reuse only
 the expressly approved language data, recorded in
 [language-data-v2.json](language-data-v2.json), rather than consulting the old
 implementation or treating its tests as requirements.
 
-T04 and later tickets have not started. Current production source, tests,
-dependency declarations, and release metadata still describe the old release;
-T04 replaces the implementation scaffold and sets the new Python requirement.
+T01-T16 are complete. Production source, fresh tests, documentation, and
+release metadata implement this contract for version 2.0.0. Acceptance coverage
+and renderer limits are recorded in [tests/README.md](../../tests/README.md).
 
 ## T01: CLI and configuration
 
@@ -267,9 +267,7 @@ Test the production policy in T07/T15; the probe does not implement it.
 
 Use **markdown-it-py 4.2.0 + mdit-py-plugins 0.6.1**. The isolated resolved
 environment also contains the transitive dependency **mdurl 0.1.2**. These
-packages were probed successfully on Python 3.14.8. Add selected dependencies with
-`uv add` in T04, then generate the lockfile; this research has not changed
-project dependencies. See the linked primary sources in the research note for
+packages were probed successfully on Python 3.14.8. T04 added the selected dependencies with `uv add` and generated the lockfile. See the linked primary sources in the research note for
 the comparison with Mistune, Python-Markdown, and tree-sitter-markdown.
 
 ### Adapter interfaces and source ownership
@@ -319,7 +317,7 @@ Run the reproducible, pinned-version experiment:
 
 ```bash
 uv run --no-project --with markdown-it-py==4.2.0 \
-  --with mdit-py-plugins==0.6.1 python parser-probe.py
+  --with mdit-py-plugins==0.6.1 python developer/2026-10-06-version-2/parser-probe.py
 ```
 
 The probe passed on 2026-10-06. It selected 10 editable paragraphs and verified
@@ -334,7 +332,7 @@ source.
 The probe is a feasibility experiment, not the formatter or production tests.
 It uses explicit single-line replacements and does not implement normalization,
 segmentation, encoding transport, multiline inline mapping, structural fallback,
-or idempotent reflow. Those remain T05-T15 work. Its CRLF/BOM check demonstrates
+or idempotent reflow. Production T05-T15 implemented these separately. Its CRLF/BOM check demonstrates
 separate original-source ownership, not a complete encoded-file round trip.
 
 ## Fixture plan for implementation
@@ -351,11 +349,11 @@ separate original-source ownership, not a complete encoded-file round trip.
 | Transport | UTF BOMs, explicit legacy codec, mixed endings, missing final newline, empty/BOM-only input, staging failures | T13 |
 | Whole documents | Idempotence, rendered structure, protected-source equality, all CLI stream/file combinations | T14, T15 |
 
-## T04 handoff
+## Historical T04 handoff (completed)
 
-All design prerequisites are confirmed. Start T04 from the committed contract:
+The following handoff was completed by T04; it is historical evidence:
 
-1. Delete the complete legacy `../../src` and `tests/` trees; create fresh modules and
+1. Delete the complete legacy `src/` and `tests/` trees (paths relative to the repository root); create fresh modules and
    meaningful tests derived from this contract and the fixture plan.
 2. Set `requires-python = ">=3.14"`, pin the development interpreter to Python
    3.14 with uv, and recreate the environment/lockfile through uv. Remove stale
@@ -369,5 +367,5 @@ All design prerequisites are confirmed. Start T04 from the committed contract:
    before starting the remaining implementation tickets.
 
 The existing implementation remains recoverable in Git history. It is not a
-reference specification for 2.0.0. No unresolved product decisions block T04;
-source-mapping and structural-safety work remain explicit implementation tasks.
+reference specification for 2.0.0. The source-mapping and structural-safety tasks were completed with regression
+tests in the corresponding implementation tickets.

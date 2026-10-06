@@ -3,16 +3,16 @@
 ## Project and implementation contract
 
 This repository contains `pysembr`, a pipeline-friendly Python CLI for
-Markdown-aware semantic line breaking. The 2.0.0 rewrite targets Python 3.14+.
+Markdown-aware semantic line breaking. Version 2.0.0 requires Python 3.14+.
 
 Before implementing or reviewing 2.0.0 behavior, read [design-v2.md](developer/2026-10-06-version-2/design-v2.md)
 for the confirmed CLI, configuration, Markdown dialect, splitting, and file-I/O
 contract. Use [user-stories.md](developer/2026-10-06-version-2/user-stories.md) for acceptance criteria and
 [tickets.md](developer/2026-10-06-version-2/tickets.md) for implementation order, dependencies, and status.
-T01-T03 are confirmed and complete; T04 begins the implementation.
+T01-T16 are complete; preserve the delivered behavior when making changes.
 
-At T04, remove all legacy source and tests and create fresh modules and tests
-from the confirmed contract. Use [language-data-v2.json](developer/2026-10-06-version-2/language-data-v2.json)
+The rewrite replaced legacy source and tests with contract-derived modules
+and regression tests. Use [language-data-v2.json](developer/2026-10-06-version-2/language-data-v2.json)
 for the explicitly approved language inventories and aliases. Legacy code,
 tests, and README behavior are not specifications for the rewrite. Git history
 preserves the old release.
@@ -36,8 +36,7 @@ mapping independently with appropriate regression tests.
 ## Development workflow
 
 - Use `uv` for interpreter, environment, and dependency management.
-- In T04, set the package's Python requirement to >=3.14 and pin the development
-  interpreter to 3.14 with uv.
+- Retain the Python >=3.14 package requirement and 3.14 development pin.
 - Add/remove dependencies with `uv add` / `uv remove`.
 - Generate lockfile changes with `uv lock`; never edit `uv.lock` by hand.
 - Set release versions with `uv version <version>`; installed version reporting
