@@ -10,7 +10,7 @@ def test_inline_protection_tracks_repeated_raw_markup_by_position():
         "`x.y`",
         '[a. b](https://example.org "title")',
         "$x.y$",
-        "<i>",
+        "<i>.",
     ]
 
 

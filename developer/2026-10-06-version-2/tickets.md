@@ -546,6 +546,25 @@ isolated from user configuration. Full `uv run pytest`: 215 passed on Python
 
 **Depends on:** T14. **Unblocks:** T16.
 
+**Status:** Done. Complete-document verification covers the configured Markdown
+profile, wording/source preservation, exact output, idempotence, unsafe syntax,
+malformed input, Unicode/encoding/endings, and CLI atomic-output failures.
+Two public regressions fixed raw paired-inline-HTML content protection and
+German closing guillemets in bare-URL boundaries. Captured HTML tags are
+classified with the standard-library parser; ambiguous openings protect the
+remaining paragraph. The committed Mozart input is exercised without rewriting
+its source fixture. Acceptance coverage and renderer limits are in
+[tests/README.md](../../tests/README.md).
+
+**Validation:** Public-seam TDD red/green cycles reproduced both regressions;
+full `uv run pytest` (243 passed), Ruff format/check, and
+`uv run ty check src tests` pass on Python 3.14.2. A separately configured
+same-engine renderer preserves code/raw HTML whitespace and covers the adopted
+extensions. Exact Mozart literals/prose excerpts, complete wording/order,
+idempotence, BOM same-file replacement, mixed-ending pipelines, and real
+read/write/close/replace failure injection pass. This is not cross-engine or
+browser-rendering proof; final documentation/artifact installation remain T16.
+
 ### Tasks
 
 - Assemble complete-document fixtures mixing prose, all supported protected
