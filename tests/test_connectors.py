@@ -99,7 +99,7 @@ def test_case_insensitive_primary_connector_repair_does_not_require_extended():
     expected = "A fine phrase, BUT\nbecause matters change\nand times pass."
     options = Options(
         width=20,
-        extended=False,
+        split_mode="words",
         languages=("english",),
         vocabulary_overrides={
             "conjunctions-english": ("BUT", "because", "and"),
@@ -136,7 +136,7 @@ def test_connector_membership_intersects_each_enabled_language_primary_inventory
     assert connector_words(Options()) == frozenset(
         {"and", "but", "or", "und", "aber", "oder"}
     )
-    assert connector_words(Options(word_splitting=False)) == frozenset()
+    assert connector_words(Options(split_mode="punctuation")) == frozenset()
     assert connector_words(
         Options(
             languages=("english",),

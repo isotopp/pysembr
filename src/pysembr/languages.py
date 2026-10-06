@@ -72,7 +72,7 @@ def word_boundaries(text: str, words: tuple[str, ...]) -> tuple[int, ...]:
 
 def connector_words(options: Options) -> frozenset[str]:
     """Return reviewed connectors present in each language's primary inventory."""
-    if not options.word_splitting:
+    if options.split_mode != "words":
         return frozenset()
     subsets = {
         "english": {"and", "but", "or"},

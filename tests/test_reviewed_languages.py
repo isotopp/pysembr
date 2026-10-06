@@ -78,7 +78,11 @@ def test_reviewed_german_fallbacks_offer_independent_boundaries(prefix, remainde
 def test_reviewed_broad_terms_are_optional_fallbacks(language, term):
     source = f"Alpha beta gamma {term} delta epsilon."
     expected = f"Alpha beta gamma\n{term} delta epsilon."
-    options = Options(width=20, languages=(language,), extended=False)
+    options = Options(
+        width=20,
+        languages=(language,),
+        vocabulary_overrides={f"split-words-{language}": ()},
+    )
     assert format_text(source, options) == source
     enabled = Options(width=20, languages=(language,))
     assert format_text(source, enabled) == expected
@@ -93,8 +97,7 @@ def test_mozart_among_historians_and_fallback_controls():
     options = Options(width=40, languages=("english",))
     assert format_text(source, options) == expected
     for disabled in (
-        replace(options, extended=False),
-        replace(options, word_splitting=False),
+        replace(options, split_mode="punctuation"),
         replace(options, vocabulary_overrides={"split-words-english": ()}),
     ):
         assert format_text(source, disabled) == source

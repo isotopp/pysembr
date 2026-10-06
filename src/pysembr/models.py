@@ -2,6 +2,9 @@
 
 from dataclasses import dataclass, field
 from pathlib import Path
+from typing import Literal, TypeAlias
+
+SplitMode: TypeAlias = Literal["sentences", "punctuation", "words"]
 
 
 @dataclass(frozen=True)
@@ -64,8 +67,7 @@ class Options:
     infile: Path | None = None
     outfile: Path | None = None
     width: int = 75
-    extended: bool = True
-    word_splitting: bool = True
+    split_mode: SplitMode = "words"
     languages: tuple[str, ...] = ("english", "german")
     encoding: str = "auto"
     config_file: Path | None = None

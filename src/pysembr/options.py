@@ -8,8 +8,30 @@ from collections.abc import Sequence
 from importlib.metadata import version
 from pathlib import Path
 from typing import Any
-from .models import Options
+from .models import Options, SplitMode
 from .languages import select_languages
+
+_SPLIT_MODES: dict[str, SplitMode] = {
+    "sentences": "sentences",
+    "sentence": "sentences",
+    "1": "sentences",
+    "punctuation": "punctuation",
+    "comma": "punctuation",
+    "2": "punctuation",
+    "words": "words",
+    "word": "words",
+    "3": "words",
+}
+
+
+def _canonical_split_mode(value: str) -> SplitMode:
+    try:
+        return _SPLIT_MODES[value.strip().casefold()]
+    except KeyError as error:
+        raise ValueError(
+            "split-mode must be sentences (sentence, 1), punctuation (comma, 2), "
+            "or words (word, 3)"
+        ) from error
 
 
 def argument_parser() -> argparse.ArgumentParser:
@@ -48,17 +70,14 @@ def argument_parser() -> argparse.ArgumentParser:
         help="Input/output text codec (default: auto; BOM or UTF-8).",
     )
     parser.add_argument(
-        "--extended",
-        "-e",
-        help="Enable fallback/preposition split words (default: enabled).",
-        action=argparse.BooleanOptionalAction,
+        "--split-mode",
+        type=_canonical_split_mode,
+        choices=("sentences", "punctuation", "words"),
         default=argparse.SUPPRESS,
-    )
-    parser.add_argument(
-        "--word-splitting",
-        help="Enable conjunction and fallback split words (default: enabled).",
-        action=argparse.BooleanOptionalAction,
-        default=argparse.SUPPRESS,
+        help=(
+            "Cumulative splitting: sentences (sentence, 1), punctuation "
+            "(comma, 2), or words (word, 3; default)."
+        ),
     )
     parser.add_argument(
         "--list-languages",
@@ -109,6 +128,8 @@ def parse_options(
     try:
         if "languages" in values:
             values["languages"] = select_languages(values["languages"])
+        if "split_mode" in values:
+            values["split_mode"] = _canonical_split_mode(values["split_mode"])
         if "width" in values:
             values["width"] = int(values["width"])
             if values["width"] <= 0:
@@ -164,8 +185,7 @@ def _config_values(
                 "outfile",
                 "width",
                 "languages",
-                "extended",
-                "word_splitting",
+                "split_mode",
                 "encoding",
                 "list_languages",
             }
@@ -177,12 +197,22 @@ def _config_values(
                     for category in ("conjunctions", "split-words", "abbreviations")
                     for language in ("english", "german")
                 }
+                if normalized in {"extended", "word_splitting"}:
+                    parser.error(
+                        f"{path} [{section}]: {key} was removed; use "
+                        "split-mode = sentences, punctuation, or words"
+                    )
                 if normalized not in allowed and not is_vocabulary:
                     parser.error(f"{path} [{section}]: unknown option {key}")
                 if normalized in result and result[normalized] != value:
                     parser.error(f"{path} [{section}]: conflicting aliases for {key}")
                 result[normalized] = value
-            for key in ("extended", "word_splitting", "list_languages"):
+            if "split_mode" in result:
+                try:
+                    result["split_mode"] = _canonical_split_mode(result["split_mode"])
+                except ValueError as error:
+                    parser.error(f"{path} [{section}]: {error}")
+            for key in ("list_languages",):
                 if key in result:
                     try:
                         result[key] = config.getboolean(

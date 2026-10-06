@@ -64,7 +64,7 @@ viewing instructions after T05. Merge and run the full suite between waves.
 
 ## T01: Establish the mode contract and remove the old controls
 
-**Status:** Planned. **Dependencies:** None. **Stories:** US-01; US-02/03/04 aliases.
+**Status:** Done. **Dependencies:** None. **Stories:** US-01; US-02/03/04 aliases.
 
 ### Work
 
@@ -97,6 +97,21 @@ viewing instructions after T05. Merge and run the full suite between waves.
   override. Unselected sections retain existing validation behavior.
 - Default formatter output and all unrelated CLI/I/O behavior remain unchanged.
 - Full quality gates pass; no temporary dual-control state remains.
+
+### Completion evidence
+
+- Added canonical `sentences`, `punctuation`, and `words` options with all nine
+  accepted CLI/INI spellings normalized to those names; `words` remains default.
+- Removed both boolean flags and model fields. Selected legacy INI options fail
+  with migration guidance, including when a CLI mode is supplied. Unselected
+  sections retain the existing lookup behavior.
+- Migrated existing primary-only regressions to explicit replacement inventories
+  and punctuation-mode controls. Public CLI inspection now reports `split_mode`.
+- TDD: 11 initial public mode-option cases failed before implementation; all
+  accepted CLI/INI aliases, defaults, and precedence now pass. Full suite: 357
+  passed. Ruff format/check, `ty check src tests`, and `uv lock --check` passed.
+- Offline worktree sync could not fetch Ruff 0.16.10. Ran pytest, Ruff, and ty
+  using the already installed project tools with worktree source on `PYTHONPATH`.
 
 ## T02: Verify sentence-only and punctuation-only formatting
 

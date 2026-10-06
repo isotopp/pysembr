@@ -82,12 +82,21 @@ def test_width_breaks_respect_inline_and_structural_safety(source, width, expect
 @pytest.mark.parametrize(
     "options,expected",
     [
-        (Options(width=12, extended=False), "Alpha\nand beta with gamma."),
-        (Options(width=12, word_splitting=False), "Alpha and beta with gamma."),
+        (
+            Options(
+                width=12,
+                languages=("english",),
+                vocabulary_overrides={"split-words-english": ()},
+            ),
+            "Alpha\nand beta with gamma.",
+        ),
+        (Options(width=12, split_mode="punctuation"), "Alpha and beta with gamma."),
         (Options(width=12, languages=("german",)), "Alpha and beta with gamma."),
     ],
 )
-def test_word_splitting_options_control_categories(options, expected):
+def test_word_mode_uses_primary_inventories_when_fallback_inventory_is_empty(
+    options, expected
+):
     source = "Alpha and beta with gamma."
     assert format_paragraph(parse_document(source).paragraphs[0], options) == expected
 
@@ -186,8 +195,18 @@ def test_overflow_selection_keeps_fitting_priority_and_safe_semantic_boundaries(
     "options,expected",
     [
         (Options(width=5), "Alpha beta\nbefore gamma\nwith delta."),
-        (Options(width=5, extended=False), "Alpha beta\nbefore gamma with delta."),
-        (Options(width=5, word_splitting=False), "Alpha beta before gamma with delta."),
+        (
+            Options(
+                width=5,
+                languages=("english",),
+                vocabulary_overrides={"split-words-english": ()},
+            ),
+            "Alpha beta\nbefore gamma with delta.",
+        ),
+        (
+            Options(width=5, split_mode="punctuation"),
+            "Alpha beta before gamma with delta.",
+        ),
         (
             Options(width=5, languages=("german",)),
             "Alpha beta before gamma with delta.",

@@ -19,7 +19,7 @@ def test_explanations_are_opt_in_and_cli_only(tmp_path):
     assert error.value.code == 2
 
 
-def test_cli_values_and_boolean_overrides(tmp_path):
+def test_cli_values_and_split_mode(tmp_path):
     options = parse_options(
         [
             "-w",
@@ -28,8 +28,8 @@ def test_cli_values_and_boolean_overrides(tmp_path):
             "input.md",
             "-o",
             "output.md",
-            "--no-extended",
-            "--no-word-splitting",
+            "--split-mode",
+            "sentence",
             "--encoding",
             "latin-1",
             "--show-options",
@@ -42,8 +42,7 @@ def test_cli_values_and_boolean_overrides(tmp_path):
         width=30,
         infile=Path("input.md"),
         outfile=Path("output.md"),
-        extended=False,
-        word_splitting=False,
+        split_mode="sentences",
         encoding="latin-1",
         show_options=True,
         list_languages=True,
@@ -72,19 +71,20 @@ def test_invalid_options_have_cli_diagnostics(args, tmp_path, capsys):
 
 def test_config_first_section_and_cli_precedence(tmp_path):
     (tmp_path / ".sembr").write_text(
-        "[default]\nwidth=40\nextended=no\nword_splitting=no\ninfile=relative%input.md\n["
+        "[default]\nwidth=40\nsplit_mode=comma\ninfile=relative%input.md\n["
         + str(tmp_path)
         + "]\nwidth=60\n"
     )
-    options = parse_options(["-w", "50", "--extended"], cwd=tmp_path, home=tmp_path)
+    options = parse_options(
+        ["-w", "50", "--split-mode", "3"], cwd=tmp_path, home=tmp_path
+    )
     assert (
         options.width,
-        options.extended,
-        options.word_splitting,
+        options.split_mode,
         str(options.infile),
         options.config_file,
         options.config_section,
-    ) == (50, True, False, "relative%input.md", tmp_path / ".sembr", "default")
+    ) == (50, "words", "relative%input.md", tmp_path / ".sembr", "default")
 
 
 @pytest.mark.parametrize(
@@ -92,8 +92,8 @@ def test_config_first_section_and_cli_precedence(tmp_path):
     [
         "[default]\nunknown=yes",
         "[default]\nforce=true",
-        "[default]\nword-splitting=yes\nword_splitting=no",
-        "[default]\nextended=maybe",
+        "[default]\nsplit-mode=word\nsplit_mode=punctuation",
+        "[default]\nsplit-mode=invalid",
         "[default]\nwidth=0",
         "malformed",
     ],
@@ -174,14 +174,35 @@ def test_home_search_selects_parent_path_without_merging(tmp_path):
     work.mkdir(parents=True)
     (work / ".sembr").write_text("[unselected]\nwidth=bad\n")
     (home / ".sembr").write_text(
-        f"[DEFAULT]\nwidth=31\n[{work.parent}]\nextended=off\n[default]\nwidth=90\n"
+        f"[DEFAULT]\nwidth=31\n[{work.parent}]\nsplit-mode=comma\n[default]\nwidth=90\n"
     )
     options = parse_options([], cwd=work, home=home)
-    assert (options.width, options.extended, options.config_section) == (
+    assert (options.width, options.split_mode, options.config_section) == (
         31,
-        False,
+        "punctuation",
         str(work.parent),
     )
+
+
+@pytest.mark.parametrize(
+    "argument",
+    ["--extended", "--no-extended", "-e", "--word-splitting", "--no-word-splitting"],
+)
+def test_removed_split_flags_are_rejected(argument, tmp_path):
+    with pytest.raises(SystemExit) as error:
+        parse_options([argument], cwd=tmp_path, home=tmp_path)
+    assert error.value.code == 2
+
+
+@pytest.mark.parametrize("key", ["extended", "word-splitting"])
+def test_removed_config_options_give_split_mode_migration(key, tmp_path, capsys):
+    (tmp_path / ".sembr").write_text(f"[default]\n{key}=false\n")
+    with pytest.raises(SystemExit) as error:
+        parse_options(["--split-mode", "words"], cwd=tmp_path, home=tmp_path)
+    assert error.value.code == 2
+    diagnostic = capsys.readouterr().err
+    assert "was removed" in diagnostic
+    assert "split-mode" in diagnostic
 
 
 def test_explicit_selection_overrides_default_search(tmp_path):
