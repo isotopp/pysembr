@@ -33,8 +33,7 @@ copying, symlink resolution, locking, and crash durability are outside scope.
 | `--outfile`, `-o` | Output file; otherwise stdout |
 | `--width`, `-w` | Positive source-character width; default 75 |
 | `--languages`, `-l` | Comma-separated names/aliases or `all`; default `all` |
-| `--extended`, `-e`, `--no-extended` | Fallback split words; enabled by default |
-| `--word-splitting`, `--no-word-splitting` | Both word categories; enabled by default |
+| `--split-mode` | Cumulative splitting mode; default `words` |
 | `--encoding` | Text codec; default `auto` |
 | `--config-file`, `-c` | Search only this INI file |
 | `--config-section`, `-s` | Select this exact INI section |
@@ -47,24 +46,72 @@ Success exits 0, invalid options/configuration exit 2, and input/output or
 formatting failures exit 1. Diagnostics go to stderr. Inspection commands do not
 read or format input; `--show-options` and `--list-languages` validate configuration.
 
+## Splitting modes
+
+Choose one cumulative mode with `--split-mode`; the matching INI key is
+`split-mode`. Each higher mode includes the modes before it.
+
+| Mode | Internal splitting of long sentences |
+| --- | --- |
+| `sentences` | Sentence boundaries only. Width does not subdivide a sentence. |
+| `punctuation` | Sentence boundaries, then commas and other supported internal punctuation. |
+| `words` | Punctuation mode, then selected language split words and connector repair. This is the default. |
+
+The values are case-insensitive. The aliases `sentence` and `1` select
+`sentences`; `comma` and `2` select `punctuation`; `word` and `3` select
+`words`. `--show-options` and configuration inspection report the canonical
+name.
+
+Sentence boundaries apply in every mode. Sentence mode keeps each ordinary
+sentence whole regardless of width. Explicit Markdown hard breaks and document
+structure can still preserve or require line boundaries; protected Markdown is
+left alone. In punctuation and words modes, width is a soft limit: no safe
+boundary may fit within the target, or the nearest safe boundary may itself be
+over width, so a line can remain longer than the target.
+
+For example, at width 25 the same input has progressively more internal
+boundaries:
+
+```bash
+printf 'Alpha beta, gamma delta and epsilon zeta. Next.\n' | pysembr --split-mode sentences --width 25
+# Alpha beta, gamma delta and epsilon zeta.
+# Next.
+printf 'Alpha beta, gamma delta and epsilon zeta. Next.\n' | pysembr --split-mode punctuation --width 25
+# Alpha beta,
+# gamma delta and epsilon zeta.
+# Next.
+printf 'Alpha beta, gamma delta and epsilon zeta. Next.\n' | pysembr --split-mode words --width 25
+# Alpha beta,
+# gamma delta
+# and epsilon zeta.
+# Next.
+```
+
+Punctuation mode tries commas first, followed by semicolons, colons, and
+space-separated en/em dashes. Words mode adds primary conjunction/clause words
+and fallback words/prepositions in that order. Connector repair is available
+only in words mode. Custom word inventories remain available, but do not enable
+word boundaries in the lower modes.
+
+The selected section's mode follows the usual precedence: a CLI value overrides
+`split-mode` in INI, which overrides the built-in `words` default.
+
 ## Optional explanations
 
-Use `--explain` to explain width exceptions, semantic overflow boundaries,
-connector repairs, and rejected Markdown-sensitive proposals on stderr.
-Mandatory sentence boundaries are explained when the adjacent nonblank lines
-would fit together. Ordinary splits and preserved blank lines produce no noise.
+Use `--explain` to describe the formatting decisions available in the selected
+mode, including relevant width exceptions and rejected Markdown-sensitive
+proposals, on stderr. Words mode can also report connector repairs. Mandatory
+sentence boundaries are explained when the adjacent nonblank lines would fit
+together. Ordinary splits and preserved blank lines produce no noise.
 The formatted stdout or output file is byte-identical with and without the flag.
 Explanations are emitted only after output writing or atomic replacement succeeds.
 
 ```bash
-printf 'First. Next.' | uv run pysembr --explain
+printf 'First. Next.' | uv run pysembr --split-mode words --explain
 ```
 
-Stdout remains `First.` and `Next.` on separate lines; stderr contains:
-
-```text
-pysembr: explain: output lines 1-2: Mandatory sentence boundary retained although the adjacent lines fit together.
-```
+The formatted output remains on stdout; explanations go to stderr. Their
+content depends on which boundaries the selected mode considers.
 
 Locations are one-based final output lines, including shifts caused by earlier
 prose formatting and physical lines inside protected multiline markup. Reasons
@@ -99,21 +146,25 @@ together, but can also suppress a real ending such as `Oak St. Next ...`.
 Language selection and replacement abbreviation lists control recognition.
 No NLP or language detection is used.
 
-For each overlong sentence/segment, try these categories in order:
+For each overlong sentence/segment, try the categories enabled by the selected
+mode in this order:
 
 1. Whitespace after commas.
 2. Whitespace after semicolons, colons, or space-separated en/em dashes.
 3. Whitespace before a selected conjunction/clause word.
-4. Whitespace before a selected fallback word/preposition, if enabled.
+4. Whitespace before a selected fallback word/preposition (words mode only).
+
+Sentence mode enables none of these internal categories. Punctuation mode
+enables the first two; words mode enables all four.
 
 Choose the rightmost safe boundary whose prefix fits within the width in the
 first category that has one, then repeat on the remainder. If no category has
-a fitting boundary, use the nearest safe semantic boundary beyond the target
-width across enabled categories, then continue on the remainder. Equal-width
+a fitting boundary, use the nearest safe eligible boundary beyond the target
+width across the enabled categories, then continue on the remainder. Equal-width
 overflow candidates prefer the earliest source boundary, then category order.
 If no eligible boundary exists, keep the remainder long. Punctuation stays
-on the preceding line; split words start the next line. `--no-word-splitting`
-disables both word categories. Separate sentences are never recombined.
+on the preceding line; split words start the next line. Separate sentences are
+never recombined.
 
 After internal segmentation, repair exact standalone English `and`, `but`,
 `or` and German `und`, `aber`, `oder` fragments when they belong to that
@@ -122,8 +173,8 @@ first, then the preceding segment; the joined source line must fit width,
 including indentation, markers, and hard-break markers. Retain the fragment
 when neither neighbor fits. Repairs stay within one sentence and hard-break
 region and pass Markdown validation. Punctuation-attached words, protected
-markup, and other short phrases are not repair targets. Disabling word
-splitting also disables repair; disabling extended fallback does not.
+markup, and other short phrases are not repair targets. Connector repair is
+available only in words mode.
 
 Width counts Unicode code points in emitted source, including indentation,
 markers, and inline markup. Equality fits. Width is a soft limit: protected
@@ -191,10 +242,10 @@ contains the complete shipped inventories. English fallback adds `in`, `on`,
 German fallback adds `in`, `an`, `zu`, `für`, `von`, `über`, `außer` and retains
 `ueber`/`ausser`; `diese`, `dieser`, `dieses`, `jener`, `jene`, `jenes` move to
 fallback. Unicode casefold already treats `außer` and `ausser` as equivalent.
-`--no-extended` disables all fallback terms, including the moved terms.
-Per-language replacements still replace complete categories rather than adding
-to shipped data; a replacement primary category can deliberately restore a
-moved term's priority.
+Both word categories are available in `words` mode; the lower modes ignore
+word inventories. Per-language replacements still replace complete categories
+rather than adding to shipped data; a replacement primary category can
+deliberately restore a moved term's priority.
 
 For example, at width 40 this Mozart excerpt becomes:
 
@@ -227,8 +278,7 @@ CLI values override the selected section, which overrides built-in defaults.
 [default]
 width = 75
 languages = all
-extended = true
-word-splitting = true
+split-mode = words
 encoding = auto
 conjunctions-english = and, but, because
 split-words-german = mit, ohne, zwischen
@@ -281,12 +331,14 @@ in the IDE's Python interpreter settings.
 
    ```sh
    cd "/absolute/path/to/writing-project" || exit
-   exec "/absolute/path/to/pysembr/.venv/bin/pysembr" --width 75 --languages en,de
+   exec "/absolute/path/to/pysembr/.venv/bin/pysembr" --split-mode words --width 75 --languages en,de
    ```
 
    Replace both paths. The first selects the working directory for `.sembr`
    discovery; the second locates the installed executable independently of
-   the IDE's PATH. Change the width/languages or add `--config-file` as needed.
+   the IDE's PATH. Change `words` to `sentences` or `punctuation` as needed;
+   adjust width/languages or add `--config-file` too. Use separate named
+   Shellfilter commands if you want different editor actions for each mode.
    Keep stdin and stdout available for the plugin; omit file options and
    output redirection.
 4. Leave **Trim trailing newlines** unchecked and save the command. Despite
@@ -313,7 +365,7 @@ quotes or `%s`. Use forward-slash paths inside the saved shell script:
 
 ```sh
 cd "C:/absolute/path/to/writing-project" || exit
-exec "C:/absolute/path/to/pysembr/.venv/Scripts/pysembr.exe" --width 75 --languages en,de
+exec "C:/absolute/path/to/pysembr/.venv/Scripts/pysembr.exe" --split-mode words --width 75 --languages en,de
 ```
 
 Use `--show-options` in a terminal from the chosen working directory to inspect
@@ -327,8 +379,23 @@ promised. Sentence splits are always enabled: `--force`/`--no-force` and the
 `force` config key are removed. Detected front matter is always protected:
 `--front-matter`/`--no-front-matter` and their config key are removed. Remove
 these keys from existing `.sembr` files; stale keys cause an option error.
-Fallback-word splitting now defaults to enabled. Markdown parsing and semantic
-safety can deliberately preserve lines that exceed the requested width.
+
+`--split-mode` replaces `--word-splitting`, `--no-word-splitting`, `--extended`,
+`-e`, and `--no-extended`; the INI keys `word-splitting` and `extended` are
+removed too. Set `split-mode` in INI or use `--split-mode` on the command line:
+
+| Previous behavior | New setting |
+| --- | --- |
+| Previous defaults (punctuation and both word categories) | `--split-mode words` or `split-mode = words` |
+| `--no-word-splitting` (punctuation only) | `--split-mode punctuation` or `split-mode = punctuation` |
+| Sentence boundaries without internal subdivision | `--split-mode sentences` or `split-mode = sentences` |
+| Primary-only splitting (`--word-splitting --no-extended`) | No exact equivalent: `words` also enables fallback words; `punctuation` disables all word boundaries |
+
+Removed controls and selected legacy INI keys fail with an option error. The
+singular names `sentence`, `comma`, and `word`, and numeric values `1`, `2`, and
+`3` are accepted aliases for the three canonical modes. Markdown parsing and
+semantic safety can deliberately preserve lines that exceed the requested
+width.
 
 ```bash
 uv sync
@@ -349,8 +416,12 @@ and sdist. Building does not tag, push, or publish a release.
 The completed [design](developer/2026-10-06-version-2/design-v2.md),
 [epic](developer/2026-10-06-version-2/user-stories.md), and
 [tickets](developer/2026-10-06-version-2/tickets.md) record the implementation
-contract. [Tests and acceptance coverage](tests/README.md) describe validation
-and its limits. Historical releases remain available in Git history.
+contract. The current [explicit splitting modes epic](developer/2026-10-06-explicit-splitting-modes/user-stories.md)
+and its [implementation tickets](developer/2026-10-06-explicit-splitting-modes/tickets.md)
+define the canonical mode names, aliases, and migration. [Tests and acceptance
+coverage](tests/README.md) describe validation and its limits. Historical
+design documents remain as records of earlier behavior; Git history preserves
+the old release.
 
 ## Verified semantic wrapping improvements
 

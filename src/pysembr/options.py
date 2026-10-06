@@ -8,8 +8,9 @@ from collections.abc import Sequence
 from importlib.metadata import version
 from pathlib import Path
 from typing import Any
-from .models import Options, SplitMode
+
 from .languages import select_languages
+from .models import Options, SplitMode
 
 _SPLIT_MODES: dict[str, SplitMode] = {
     "sentences": "sentences",
@@ -41,10 +42,27 @@ def argument_parser() -> argparse.ArgumentParser:
         description="Markdown-aware semantic line breaking for stdin/stdout pipelines.",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog=(
+            "Split modes are cumulative (each includes the behavior above):\n"
+            "  sentences (sentence, 1): sentence boundaries only; width does not\n"
+            "    subdivide sentences.\n"
+            "  punctuation (comma, 2): includes sentences, plus commas and other\n"
+            "    internal punctuation.\n"
+            "  words (word, 3): includes punctuation, plus selected language split\n"
+            "    words and connector repair.\n"
+            "Sentence boundaries remain unconditional. Existing Markdown hard\n"
+            "breaks and structure can still keep lines separate.\n"
+            "INI key: split-mode (for example, split-mode = words); a CLI value\n"
+            "overrides the selected INI value.\n"
+            "In punctuation and words modes, width is a soft limit; safe\n"
+            "boundaries can still produce lines over width.\n"
+            "\n"
             "Examples:\n"
             "  cat input.md | pysembr > output.md\n"
             "  pysembr -i input.md -o output.md\n"
             "  pysembr -i input.md -o input.md\n"
+            "  pysembr --split-mode sentences\n"
+            "  pysembr --split-mode punctuation --width 60\n"
+            "  pysembr --split-mode words --width 60\n"
             "  pysembr -w 60 -l en,de\n"
             "  pysembr -c .sembr -s default"
         ),
@@ -75,8 +93,8 @@ def argument_parser() -> argparse.ArgumentParser:
         choices=("sentences", "punctuation", "words"),
         default=argparse.SUPPRESS,
         help=(
-            "Cumulative splitting: sentences (sentence, 1), punctuation "
-            "(comma, 2), or words (word, 3; default)."
+            "Cumulative mode: sentences (sentence, 1), punctuation (comma, 2), "
+            "or words (word, 3; default: words). See the mode descriptions below."
         ),
     )
     parser.add_argument(

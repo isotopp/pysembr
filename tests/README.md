@@ -73,6 +73,25 @@ the historical corpus output/audit remain separate. The full suite passes with
 331 tests. T09 added verification evidence instead of tests duplicating those
 already-covered public paths.
 
+## Explicit splitting-mode acceptance coverage
+
+The current [mode stories](../developer/2026-10-06-explicit-splitting-modes/user-stories.md)
+and [tickets](../developer/2026-10-06-explicit-splitting-modes/tickets.md)
+define three cumulative modes and their aliases. Coverage uses these public
+seams:
+
+| Story | Verification |
+| --- | --- |
+| US-01: Select one mode | `test_split_modes.py`, `test_options.py`, and `test_cli.py`: canonical modes, singular/numeric aliases, default and precedence, INI values, inspection output, rejected legacy controls, and CLI help |
+| US-02: Sentence-only mode | `test_split_mode_acceptance.py`: story example, width invariance, hard breaks, structure, protected spans, sentence recognition and installed CLI |
+| US-03: Punctuation mode | `test_split_mode_acceptance.py` and `test_segments.py`: comma/other-punctuation priority, overflow, custom word inventory isolation, Markdown safety and installed CLI |
+| US-04: Full word mode | `test_words_mode.py`, `test_connectors.py`, and `test_reviewed_languages.py`: both word categories, priority, selected inventories, connector repair and unchanged default corpus output |
+| US-05: Explain and document | `test_reports.py`, `test_diagnostics.py`, and `test_cli.py`: mode-aware explanations, final locations, stdout/stderr separation and unchanged formatted output; README/help/configuration migration examples are cross-checked against the installed CLI |
+| US-06: Manual page | `docs/pysembr.1`: rendering and command examples are checked in the final documentation ticket |
+
+The complete integrated mode/report cross-check is recorded in T07 after the
+mode-aware report changes and manual page have been merged.
+
 ## Rendered-meaning checks and limits
 
 The test-only renderer creates a fresh `MarkdownIt` instance with the confirmed
