@@ -367,6 +367,21 @@ tabs, BOM/CRLF/mixed endings, missing final newline, and malformed constructs.
 
 **Depends on:** T04. **Unblocks:** T14.
 
+**Status:** Done. `pysembr.transport` decodes/encodes strict binary source with
+concrete codecs, exact BOM retention, and raw line-start/terminator metadata.
+Stream/file overrides, complete writes, same-file replacement, exclusive random
+sibling staging, and close-before-`Path.replace()` behavior are implemented.
+Handled failures remove only this run's staging file; cleanup failures attach a
+note while retaining the original diagnostic. CLI integration remains T14.
+
+**Validation:** Full red/green TDD cycles exercised UTF-8/newline retention,
+BOM signatures, explicit codecs, stream transport, file replacement, cleanup,
+cleanup-error diagnostics, and partial output writes. Real-filesystem regression
+coverage verifies random-name collisions, identical paths, new/existing output,
+read/write/close/replace failures, encoding before staging creation, and stdout
+errors. Full `uv run pytest`: 43 passed on Python 3.14.2; Ruff format/check and
+`uv run mypy src` pass.
+
 ### Tasks
 
 - Implement T01's stream/file encoding and newline policies.
