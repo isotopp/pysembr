@@ -367,6 +367,22 @@ unsafe starts, terminal whitespace, and unbreakable segments.
 
 **Depends on:** T06, T07, T09. **Unblocks:** T11.
 
+**Status:** Done. `format_text` joins and normalizes eligible ordinary prose,
+restores exact physical protected-inline source, and formats independent
+hard-break chunks with preserved markers. Source replacements retain protected
+blocks, blank lines, BOM, mixed endings, and final-newline presence. The normal
+path validates proposed edits together; failed validation retries while retaining
+safe generated breaks, or leaves ambiguous prose untouched. List/definition
+prose remains for T11/T12.
+
+**Validation:** Public `format_text` TDD red/green cycles cover normalization,
+multiline inline preservation, hard-break width resets, safe boundaries beside
+protected tokens, structural retries, and physical multiline width. Full
+`uv run pytest` (167 passed), Ruff format/check, and `uv run ty check src tests`
+pass on Python 3.14.2 with the merged release-tooling changes. Regression fixtures
+verify idempotence, every protected block, non-ASCII whitespace, BOM/NUL,
+CRLF/mixed endings/document fallback, and missing final newline.
+
 ### Tasks
 
 - Join soft-wrapped prose into logical paragraphs with agreed normalization.
