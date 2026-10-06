@@ -115,7 +115,7 @@ viewing instructions after T05. Merge and run the full suite between waves.
 
 ## T02: Verify sentence-only and punctuation-only formatting
 
-**Status:** Planned. **Dependencies:** T01. **Stories:** US-02, US-03.
+**Status:** Done. **Dependencies:** T01. **Stories:** US-02, US-03.
 
 ### Work
 
@@ -136,6 +136,29 @@ viewing instructions after T05. Merge and run the full suite between waves.
   in either lower mode. Preserve word order, rendered meaning, and idempotence.
 - Make narrowly required formatter corrections; coordinate shared-file edits
   with T03 instead of implementing a second segmentation engine.
+
+### Completion evidence
+
+- Added public `format_text` acceptance examples for the exact US-02/US-03
+  story input, sentence-mode width invariance at widths 1, 25, and 75, and
+  punctuation mode's over-width remainder without an eligible boundary.
+- Verified both lower modes ignore custom word inventories and do not apply
+  connector repair. Covered English/German abbreviations, initials, decimals,
+  closing punctuation, nested lists, definitions, protected inline/code-block
+  source, Markdown-unsafe continuations, CRLF hard breaks, prefixes, exact-width
+  boundaries, repeated punctuation, category priority, and nearest safe
+  punctuation overflow. Examples assert idempotence; representative Markdown
+  cases also compare rendered meaning. Installed-CLI tests exercise both modes.
+- No formatter changes were needed: T01's minimum migration already implements
+  both modes according to the accepted behavior. The new public acceptance
+  coverage passes against that implementation.
+- Validation: full suite, 385 passed; Ruff format and check passed; `ty check
+  src tests` passed using the main checkout's installed project environment
+  with this worktree's source on `PYTHONPATH`.
+- Worktree `uv run` is unavailable in this sandbox because uv panics while
+  initializing macOS system configuration. An escalated offline sync also
+  could not fetch pinned Ruff 0.16.10 because its wheel is absent from cache;
+  the installed project tools were used to complete each quality gate.
 
 ### Done when
 
