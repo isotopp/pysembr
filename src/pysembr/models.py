@@ -26,7 +26,12 @@ class Replacement:
 
 @dataclass(frozen=True)
 class ParagraphSource:
-    """An editable paragraph and its source/container context."""
+    """Editable prose and its source/container context.
+
+    Protected/hard-break ranges index ``text``; logical_to_source maps each
+    logical character to an absolute original-source offset. original_source
+    includes physical indentation gaps omitted from the logical text.
+    """
 
     start: int
     end: int
@@ -37,6 +42,9 @@ class ParagraphSource:
     line_ending: str = "\n"
     trailing_ending: str = ""
     logical_to_source: tuple[int, ...] = ()
+    protected_ranges: tuple[tuple[int, int], ...] = ()
+    hard_breaks: tuple[tuple[int, int], ...] = ()
+    original_source: str = ""
 
 
 @dataclass(frozen=True)
