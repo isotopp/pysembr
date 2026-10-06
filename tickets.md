@@ -296,6 +296,21 @@ list content, footnote rendering, raw HTML, and 300 independent paragraphs.
 
 **Depends on:** T05, T07. **Unblocks:** T09.
 
+**Status:** Done. Public `format_paragraph` splits normalized mapped prose at
+terminal punctuation clusters and ASCII/English/German closing quotes/brackets.
+Selected/configured abbreviations use Unicode casefold with original offsets;
+initial sequences are conservative. Protected inline source, hard-break markers,
+non-ASCII whitespace, unsafe line starts, prefixes, and terminators are retained.
+Soft-wrap normalization and full structural validation remain T10 work.
+
+**Validation:** Public formatter TDD red/green cycles with full `uv run pytest`
+every cycle; final suite 125 passed on Python 3.14.2. Ruff format/check and mypy
+passed. Literal-output tests cover unconditional splitting, decimals, selected
+abbreviations, Unicode casefold expansion, initials, punctuation clusters,
+German inverted guillemets, protected inline content, hard breaks, CRLF/list
+prefixes, and unsafe block starts. Abbreviation sentence-end ambiguity remains
+explicitly unsplit, as agreed.
+
 ### Tasks
 
 - Recognize `.`, `!`, and `?` sentence endings followed by whitespace or end
