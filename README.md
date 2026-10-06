@@ -148,6 +148,31 @@ form the baseline. The reviewed English `St.` addition is documented in the
 [abbreviation review](developer/2026-10-06-semantic-wrapping-improvements/abbreviation-review.md);
 other abbreviation entries and spellings are retained.
 
+The [split-word review](developer/2026-10-06-semantic-wrapping-improvements/language-review.md)
+documents the current changes; [packaged data](src/pysembr/languages.json)
+contains the complete shipped inventories. English fallback adds `in`, `on`,
+`at`, `for`, `by`, `among`; `this`, `even`, `then` move from primary to fallback.
+German fallback adds `in`, `an`, `zu`, `für`, `von`, `über`, `außer` and retains
+`ueber`/`ausser`; `diese`, `dieser`, `dieses`, `jener`, `jene`, `jenes` move to
+fallback. Unicode casefold already treats `außer` and `ausser` as equivalent.
+`--no-extended` disables all fallback terms, including the moved terms.
+Per-language replacements still replace complete categories rather than adding
+to shipped data; a replacement primary category can deliberately restore a
+moved term's priority.
+
+For example, at width 40 this Mozart excerpt becomes:
+
+```text
+is the most commonly cited diagnosis
+among historians.
+```
+
+These are lexical candidates, not grammatical analysis: a phrasal verb such as
+`carried on` can split before `on`. With both languages enabled, a German term
+such as `an` can match an English article. Select one language or customize its
+inventories when that distinction matters. Connector repair remains limited
+to the separately documented subset; fallback additions never expand it.
+
 Configuration uses `configparser` INI with literal values (no interpolation).
 Search `./.sembr`, then `~/.sembr` on macOS/Linux. Windows searches
 `.\sembr.ini`, then `%APPDATA%\sembr\sembr.ini`, falling back to `~/sembr.ini`

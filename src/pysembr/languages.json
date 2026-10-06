@@ -13,7 +13,6 @@
   "languages": {
     "english": {
       "conjunctions": [
-        "this",
         "that",
         "which",
         "who",
@@ -26,7 +25,6 @@
         "although",
         "though",
         "since",
-        "even",
         "once",
         "before",
         "after",
@@ -34,7 +32,6 @@
         "unless",
         "whereas",
         "meanwhile",
-        "then",
         "than",
         "and",
         "but",
@@ -61,7 +58,16 @@
         "behind",
         "beyond",
         "within",
-        "during"
+        "during",
+        "in",
+        "on",
+        "at",
+        "for",
+        "by",
+        "among",
+        "this",
+        "even",
+        "then"
       ],
       "abbreviations": [
         "Mr.",
@@ -80,12 +86,6 @@
     },
     "german": {
       "conjunctions": [
-        "diese",
-        "dieser",
-        "dieses",
-        "jener",
-        "jene",
-        "jenes",
         "dass",
         "weil",
         "jedoch",
@@ -124,7 +124,20 @@
         "ausser",
         "auf",
         "bei",
-        "bis"
+        "bis",
+        "in",
+        "an",
+        "zu",
+        "f\u00fcr",
+        "von",
+        "\u00fcber",
+        "au\u00dfer",
+        "diese",
+        "dieser",
+        "dieses",
+        "jener",
+        "jene",
+        "jenes"
       ],
       "abbreviations": [
         "Dr.",

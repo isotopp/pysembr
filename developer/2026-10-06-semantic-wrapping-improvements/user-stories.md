@@ -19,7 +19,9 @@ preferred review order; implementation dependencies are recorded in
 [tickets.md](tickets.md). No release version is assigned.
 
 All examples below use width 40 with English and German word splitting and
-extended fallback enabled. Source excerpts retain the physical wrapping in
+extended fallback enabled, except US-01 explicitly disables extended fallback
+to isolate overflow after the reviewed vocabulary additions. Source excerpts
+retain the physical wrapping in
 [mozart.md](../../mozart.md); current excerpts come from the committed
 [mozart-formatted.md](../../mozart-formatted.md). Desired excerpts illustrate
 the proposed behavior, not output from an implemented formatter. Excerpts may
@@ -75,6 +77,11 @@ leave an entire long sentence on one line.
 
 ### Mozart example
 
+Use width 40 with `--no-extended` for the desired US-01 output below. The
+baseline current output was captured before this epic. Under the revised
+default inventory, `for` supplies an earlier fitting fallback boundary and
+therefore wins before overflow is considered.
+
 Source:
 
 ```markdown
@@ -96,8 +103,11 @@ This relationship would fester for eight years
 before breaking apart entirely.
 ```
 
-The prefix before `before` is 46 characters. Accepting that nearest semantic
-boundary leaves a modest overflow instead of retaining the 78-character line.
+The prefix before `before` is 46 characters. With extended fallback disabled,
+accepting that nearest semantic boundary leaves a modest overflow instead of
+retaining the 78-character line. With the revised defaults, the same text
+becomes `This relationship would fester`, `for eight years`, and
+`before breaking apart entirely.`: fitting candidates take priority.
 
 ## US-02: Avoid isolated connector fragments
 

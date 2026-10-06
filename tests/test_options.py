@@ -212,12 +212,12 @@ def test_help_version_ignore_invalid_config(inspection, tmp_path):
     assert error.value.code == 0
 
 
-def test_shipped_vocabulary_keeps_approved_spellings():
+def test_shipped_vocabulary_keeps_baseline_and_reviewed_spellings():
     from pysembr.languages import vocabulary
 
     data = vocabulary(Options())
     assert "während" in data.conjunctions
-    assert "ueber" in data.split_words and "über" not in data.split_words
+    assert "ueber" in data.split_words and "über" in data.split_words
     assert "and" in data.conjunctions and "and" not in data.split_words
     assert "z. B." in data.abbreviations
 

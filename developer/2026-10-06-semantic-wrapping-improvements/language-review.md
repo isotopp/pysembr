@@ -233,3 +233,37 @@ T05 owns data changes and complete expected output under the revised formatter.
 T05 must retain adverse cases as explicit limitations or reconsider an inventory
 recommendation based on its actual output. The lack of grammatical analysis is
 intentional; accepting a fallback does not promise universally natural breaks.
+
+## T05 implementation evaluation (2026-10-06)
+
+All recommendations above are retained after evaluation with completed T02/T04.
+Production data now includes them; the review's original T03 handoff remains
+historical. No formatter selection logic changed in T05.
+
+- Public formatting regressions cover every reviewed English/German addition
+  and move, exact-width fallback selection, a nested German overflow,
+  category priority, aliases/mixed languages, replacement overrides, disabled
+  categories, case, hyphenated/unrelated words and protected labels/code.
+- English `among` gives the literal US-03 Mozart result at width 40.
+- Adding English `for` changes the US-01 relationship example under defaults:
+  a fitting `for` boundary now wins, yielding `This relationship would fester`,
+  `for eight years`, `before breaking apart entirely.`. The original 46-character
+  overflow example remains valid with English fallback replaced by empty.
+  The T02 regression explicitly isolates that inventory to keep proving
+  overflow rather than freezing the old default vocabulary.
+- German `außer` already matched baseline `ausser` through Unicode casefold.
+  Its explicit shipped spelling is accepted, but it introduces no independent
+  boundary. Vocabulary merging preserves the first casefold-equivalent spelling;
+  normal output spelling remains exactly as supplied by the user.
+- German `an` matches English article `an` with both languages enabled. At width
+  25, `The visitors waited an unusually long time.` becomes `The visitors waited`
+  followed by `an unusually long time.`. This is a declared mixed-language
+  lexical limitation; users can select English or replace German fallback.
+- Adverse English `carried on` and German `zu wiederholen` cases retain the
+  reviewed limitations: they can split at their fallback term. Tests record
+  these outputs without pretending to infer predicates or infinitives.
+- The current Mozart golden was regenerated only after independent rendered
+  meaning, exact wording/order, protected source and idempotence checks. The
+  baseline copy and original audit are untouched; T09 owns the new complete audit.
+
+The full suite passes with 316 tests; Ruff formatting/lint and ty checks pass.

@@ -214,7 +214,7 @@ algorithm stabilizes, preventing vocabulary changes from obscuring T02/T04.
 
 ## T05: Integrate reviewed English and German split inventories
 
-**Status:** Todo. **Dependencies:** T03, T04. **Story:** US-03.
+**Status:** Done. **Dependencies:** T03, T04. **Story:** US-03.
 
 ### Work
 
@@ -233,6 +233,22 @@ algorithm stabilizes, preventing vocabulary changes from obscuring T02/T04.
 - Runtime data, review decisions, README, and regression examples agree.
 - German improvements have independent evidence and tests.
 - No configuration replacement semantics change; quality gates pass.
+
+### Completion evidence
+
+- Applied the reviewed English/German fallback additions and category moves
+  in packaged data, retaining baseline spellings and reviewed `St.`.
+- Added 29 public formatting regressions in `test_reviewed_languages.py` and
+  updated the approved-spelling expectation. Recorded actual-algorithm findings
+  in [language-review.md](language-review.md), including casefold equivalence,
+  mixed-language ambiguity and the revised default relationship example.
+  US-01 now explicitly uses `--no-extended` to isolate its overflow result;
+  other formatting story examples were verified against the final inventories.
+- Updated README inventories/controls and the Mozart golden after wording,
+  protected-source, independent rendered-meaning and idempotence verification.
+  Historical baseline/audit remain untouched; T09 performs the final audit.
+- Validation: full `uv run pytest` passes (316 tests); Ruff format/check and
+  `uv run ty check src tests` pass.
 
 ## T06: Fix the demonstrated abbreviation boundary conservatively
 
