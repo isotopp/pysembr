@@ -100,14 +100,13 @@ def _segment_paragraph(
                             candidates.append((start + whitespace.start(), position))
                     categories.append(candidates)
             chosen = None
-            for candidates in categories:
-                fitting = [
+            overflowing: list[tuple[int, int, int, int]] = []
+            for category, candidates in enumerate(categories):
+                eligible = [
                     (boundary, next_position)
                     for boundary, next_position in candidates
                     if boundary > start
                     and next_position < end
-                    and len(re.split(r"\r\n|\r|\n", prefix + text[start:boundary])[-1])
-                    <= options.width
                     and not any(
                         span_start < next_position and boundary < span_end
                         for span_start, span_end in paragraph.protected_ranges
@@ -115,9 +114,23 @@ def _segment_paragraph(
                     )
                     and safe_line_start(text[next_position:].splitlines()[0])
                 ]
+                fitting = []
+                for boundary, next_position in eligible:
+                    emitted_width = len(
+                        re.split(r"\r\n|\r|\n", prefix + text[start:boundary])[-1]
+                    )
+                    if emitted_width <= options.width:
+                        fitting.append((boundary, next_position))
+                    else:
+                        overflowing.append(
+                            (emitted_width, boundary, category, next_position)
+                        )
                 if fitting:
                     chosen = max(fitting)
                     break
+            if chosen is None and overflowing:
+                _, boundary, _, next_position = min(overflowing)
+                chosen = boundary, next_position
             if chosen is None:
                 break
             boundary, next_position = chosen

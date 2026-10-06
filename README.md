@@ -69,7 +69,11 @@ For each overlong sentence/segment, try these categories in order:
 4. Whitespace before a selected fallback word/preposition, if enabled.
 
 Choose the rightmost safe boundary whose prefix fits within the width in the
-first category that has one, then repeat on the remainder. Punctuation stays
+first category that has one, then repeat on the remainder. If no category has
+a fitting boundary, use the nearest safe semantic boundary beyond the target
+width across enabled categories, then continue on the remainder. Equal-width
+overflow candidates prefer the earliest source boundary, then category order.
+If no eligible boundary exists, keep the remainder long. Punctuation stays
 on the preceding line; split words start the next line. `--no-word-splitting`
 disables both word categories. Separate sentences are never recombined.
 
