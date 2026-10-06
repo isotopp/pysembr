@@ -1,5 +1,6 @@
 """Shared subprocess seam for the installed CLI."""
 
+import os
 import subprocess
 import sys
 from collections.abc import Callable
@@ -15,6 +16,11 @@ type CliRunner = Callable[..., subprocess.CompletedProcess[bytes]]
 def run_cli(tmp_path: Path) -> CliRunner:
     """Run the installed entry point in an isolated working directory."""
     executable = Path(sys.executable).parent / "pysembr"
+    home = tmp_path / "home"
+    home.mkdir()
+    environment = dict(
+        os.environ, HOME=str(home), USERPROFILE=str(home), APPDATA=str(home)
+    )
 
     def run(*arguments: str, input: bytes = b"") -> subprocess.CompletedProcess[bytes]:
         return subprocess.run(
@@ -23,6 +29,7 @@ def run_cli(tmp_path: Path) -> CliRunner:
             capture_output=True,
             cwd=tmp_path,
             check=False,
+            env=environment,
         )
 
     return run

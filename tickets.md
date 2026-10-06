@@ -508,6 +508,23 @@ errors. Full `uv run pytest`: 43 passed on Python 3.14.2; Ruff format/check and
 
 **Depends on:** T05, T12, T13. **Unblocks:** T15.
 
+**Status:** Done. The installed command resolves effective options, formats
+Markdown, and routes binary input/output through atomic file transport. Inspection
+commands exit without reading input: canonical language names and effective JSON
+options include the selected INI file/section. Help covers each flag, defaults,
+pipelines, separate/same files, width, languages, and configuration. Invalid
+options/configuration exit 2; handled runtime failures exit 1 with stderr
+messages and cleanup notes. Successful formatting leaves diagnostics empty.
+
+**Validation:** Full red/green TDD cycles exercised the installed pipeline,
+language/options inspection, runtime diagnostics, cleanup notes, and CLI help.
+Subprocess regression tests cover all four stream/file routes, file precedence,
+same-file replacement, UTF-16/BOM/empty/final-newline preservation, Latin-1,
+English/German selection, negative flags, configuration precedence, invalid
+options/configuration, and encoding/I/O errors. Subprocess HOME/APPDATA are
+isolated from user configuration. Full `uv run pytest`: 215 passed on Python
+3.14.2; Ruff format/check and `uv run ty check src tests` pass.
+
 ### Tasks
 
 - Wire the installed entry point to argument parsing, effective options,

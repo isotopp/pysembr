@@ -16,35 +16,61 @@ def argument_parser() -> argparse.ArgumentParser:
     """Build the public CLI, including inspection actions independent of INI."""
     parser = argparse.ArgumentParser(
         prog="pysembr",
-        description="Markdown-aware semantic line breaking.",
-        epilog="Examples: cat input.md | pysembr; pysembr -i input.md -o input.md; pysembr -w 60 -l en,de -c .sembr",
+        description="Markdown-aware semantic line breaking for stdin/stdout pipelines.",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog=(
+            "Examples:\n"
+            "  cat input.md | pysembr > output.md\n"
+            "  pysembr -i input.md -o output.md\n"
+            "  pysembr -i input.md -o input.md\n"
+            "  pysembr -w 60 -l en,de\n"
+            "  pysembr -c .sembr -s default"
+        ),
     )
-    for name, short in [
-        ("infile", "-i"),
-        ("outfile", "-o"),
-        ("width", "-w"),
-        ("languages", "-l"),
-        ("config-file", "-c"),
-        ("config-section", "-s"),
+    for name, short, help_text in [
+        ("infile", "-i", "Read this file instead of stdin."),
+        ("outfile", "-o", "Atomically replace this file instead of writing stdout."),
+        ("width", "-w", "Positive source-character width (default: 75; soft limit)."),
+        (
+            "languages",
+            "-l",
+            "Comma-separated language names/aliases, or all (default: all).",
+        ),
+        ("config-file", "-c", "Use only this INI configuration file."),
+        ("config-section", "-s", "Select this exact INI section."),
     ]:
-        parser.add_argument("--" + name, short, default=argparse.SUPPRESS)
-    parser.add_argument("--encoding", default=argparse.SUPPRESS)
+        parser.add_argument(
+            "--" + name, short, default=argparse.SUPPRESS, help=help_text
+        )
+    parser.add_argument(
+        "--encoding",
+        default=argparse.SUPPRESS,
+        help="Input/output text codec (default: auto; BOM or UTF-8).",
+    )
     parser.add_argument(
         "--extended",
         "-e",
+        help="Enable fallback/preposition split words (default: enabled).",
         action=argparse.BooleanOptionalAction,
         default=argparse.SUPPRESS,
     )
     parser.add_argument(
         "--word-splitting",
+        help="Enable conjunction and fallback split words (default: enabled).",
         action=argparse.BooleanOptionalAction,
         default=argparse.SUPPRESS,
     )
     parser.add_argument(
-        "--list-languages", action="store_true", default=argparse.SUPPRESS
+        "--list-languages",
+        action="store_true",
+        default=argparse.SUPPRESS,
+        help="List available canonical languages and exit.",
     )
     parser.add_argument(
-        "--show-options", action="store_true", default=argparse.SUPPRESS
+        "--show-options",
+        action="store_true",
+        default=argparse.SUPPRESS,
+        help="Print effective options and selected INI section as JSON, then exit.",
     )
     parser.add_argument(
         "--version", action="version", version=f"pysembr {version('pysembr')}"
