@@ -91,7 +91,7 @@ algorithm stabilizes, preventing vocabulary changes from obscuring T02/T04.
 
 ## T02: Split at the nearest safe boundary beyond width
 
-**Status:** Todo. **Dependencies:** T01. **Story:** US-01.
+**Status:** Done. **Dependencies:** T01. **Story:** US-01.
 
 ### Work
 
@@ -112,6 +112,22 @@ algorithm stabilizes, preventing vocabulary changes from obscuring T02/T04.
 - A fitting lower-priority boundary wins over every overflowing boundary.
 - No eligible boundary leaves the remainder unchanged, without looping.
 - Quality gates pass and README describes the changed soft-width behavior.
+
+### Completion evidence
+
+- First public Mozart relationship regression failed with the original
+  formatter while all 244 baseline tests passed; implemented the nearest
+  safe overflow fallback and then completed the full suite with 260 passing
+  tests. Added regressions for a one-character overflow, exact fits, fitting
+  lower-priority words, nearest cross-category boundaries, repeated overflow,
+  nested prefixes/hard breaks, protected markup, no eligible candidate, and
+  disabled/custom vocabularies. Repeated formatting is unchanged.
+- Updated the current Mozart golden output after independently checking
+  unchanged word order, supported rendered Markdown meaning, and idempotence.
+  The historical audit and epic baseline are unchanged; T09 will audit the
+  final integrated output.
+- README documents overflow selection and unchanged fitting category priority.
+  Full pytest, Ruff formatting/lint, and source/test ty checks pass.
 
 ## T03: Review split words and define connector eligibility
 

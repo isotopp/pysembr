@@ -1,6 +1,6 @@
 import pytest
 
-from pysembr.formatter import format_paragraph
+from pysembr.formatter import format_paragraph, format_text
 from pysembr.markdown import parse_document
 from pysembr.models import Options
 
@@ -96,7 +96,7 @@ def test_word_splitting_options_control_categories(options, expected):
     "source,width,expected",
     [
         ("10. Alpha, beta, gamma.", 12, "10. Alpha,\n    beta,\n    gamma."),
-        ("- Alpha, beta.", 2, "- Alpha, beta."),
+        ("- Alpha, beta.", 2, "- Alpha,\n  beta."),
         ("Straße, beta.", 7, "Straße,\nbeta."),
         ("Alpha beta gamma.", 1, "Alpha beta gamma."),
         ("Alpha, beta. Done.", 20, "Alpha, beta.\nDone."),
@@ -126,3 +126,96 @@ def test_category_priority_rightmost_words_and_no_hyphen_or_nbsp_break(
         format_paragraph(parse_document(source).paragraphs[0], Options(width=width))
         == expected
     )
+
+
+def test_mozart_relationship_uses_nearest_overflow_boundary():
+    source = (
+        "This relationship would fester for eight years before breaking apart entirely."
+    )
+    assert format_paragraph(
+        parse_document(source).paragraphs[0], Options(width=40)
+    ) == (
+        "This relationship would fester for eight years\nbefore breaking apart entirely."
+    )
+
+
+@pytest.mark.parametrize(
+    "source,width,expected",
+    [
+        ("Alpha beta, gamma.", 10, "Alpha beta,\ngamma."),
+        (
+            "Alpha beta before gamma delta, epsilon.",
+            8,
+            "Alpha beta\nbefore gamma delta,\nepsilon.",
+        ),
+        ("Alpha beta; gamma, delta.", 5, "Alpha beta;\ngamma,\ndelta."),
+        (
+            "Alpha with beta gamma, delta.",
+            10,
+            "Alpha\nwith beta gamma,\ndelta.",
+        ),
+        ("Alpha beta, gamma.", 11, "Alpha beta,\ngamma."),
+        (
+            "Alpha beta, gamma delta; epsilon zeta and eta.",
+            5,
+            "Alpha beta,\ngamma delta;\nepsilon zeta\nand eta.",
+        ),
+        (
+            "Alpha `beta, and gamma` before delta, end.",
+            8,
+            "Alpha `beta, and gamma`\nbefore delta,\nend.",
+        ),
+        ("Alpha beta, # heading.", 5, "Alpha beta, # heading."),
+        ("Alpha beta gamma.", 5, "Alpha beta gamma."),
+    ],
+)
+def test_overflow_selection_keeps_fitting_priority_and_safe_semantic_boundaries(
+    source, width, expected
+):
+    options = Options(width=width)
+    assert format_text(source, options) == expected
+    assert format_text(expected, options) == expected
+
+
+@pytest.mark.parametrize(
+    "options,expected",
+    [
+        (Options(width=5), "Alpha beta\nbefore gamma\nwith delta."),
+        (Options(width=5, extended=False), "Alpha beta\nbefore gamma with delta."),
+        (Options(width=5, word_splitting=False), "Alpha beta before gamma with delta."),
+        (
+            Options(width=5, languages=("german",)),
+            "Alpha beta before gamma with delta.",
+        ),
+        (
+            Options(
+                width=5,
+                languages=("english",),
+                vocabulary_overrides={
+                    "conjunctions-english": (),
+                    "split-words-english": ("gamma",),
+                },
+            ),
+            "Alpha beta before\ngamma with delta.",
+        ),
+    ],
+)
+def test_overflow_respects_enabled_categories_and_replacement_vocabularies(
+    options, expected
+):
+    source = "Alpha beta before gamma with delta."
+    assert format_text(source, options) == expected
+    assert format_text(expected, options) == expected
+
+
+def test_overflow_counts_nested_prefixes_and_preserves_hard_break_regions():
+    source = (
+        "- Parent.\n\n  12. Alpha beta, gamma delta; epsilon.  \n      Zeta eta, theta."
+    )
+    expected = (
+        "- Parent.\n\n  12. Alpha beta,\n      gamma delta;\n      epsilon.  \n"
+        "      Zeta eta,\n      theta."
+    )
+    options = Options(width=10)
+    assert format_text(source, options) == expected
+    assert format_text(expected, options) == expected
