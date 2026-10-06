@@ -322,7 +322,7 @@ localized, inspect merges, and retain both sets of approved data.
 
 ## T08: Capture final formatter decisions and emit explanations
 
-**Status:** Todo. **Dependencies:** T02, T04, T05, T06, T07. **Story:** US-05.
+**Status:** Done. **Dependencies:** T02, T04, T05, T06, T07. **Story:** US-05.
 
 ### Work
 
@@ -350,6 +350,25 @@ localized, inspect merges, and retain both sets of approved data.
 - Reports do not interfere with stdout, encoding/BOM preservation, atomic
   replacement, inspection commands, or existing failure exit behavior.
 - Quality gates pass and diagnostic examples match actual output.
+
+### Completion evidence
+
+- Added public `format_report` using the same selection/validation path as
+  `format_text`; normal formatting does not collect events or source projections.
+- Recorded actual overflow, connector, sentence, local safety and full-validation
+  decisions. Final accepted/recovered boundaries determine retained events;
+  discarded proposals are explicitly labeled as rejections.
+- Projected normalized chunk offsets through emitted prefixes, physical protected
+  source, CRLF, hard markers and final source splices. Original-source maps handle
+  a real normalization-only validation failure without stale line locations.
+- Parser-owned block labels are captured during its existing parse only for
+  reports; unknown/unmappable source receives a conservative generic label.
+- Installed CLI `--explain` preserves stdout/file bytes and emits records only
+  after successful output. Tests cover pipeline/separate/same-file UTF-16 BOM
+  and CRLF, input/output/atomic replacement failures and inspection modes.
+- Full suite: 331 tests passed; Ruff format/check and `ty check src tests` passed.
+  A corpus probe explained all 30 current width-40 exceptions; all measured
+  diagnostic widths match actual final physical lines. T09 owns the final audit.
 
 ## T09: Complete integrated corpus verification and documentation
 
