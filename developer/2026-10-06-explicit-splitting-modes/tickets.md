@@ -147,7 +147,7 @@ viewing instructions after T05. Merge and run the full suite between waves.
 
 ## T03: Verify full word mode and mode-gated connector repair
 
-**Status:** Planned. **Dependencies:** T01. **Stories:** US-04.
+**Status:** Done. **Dependencies:** T01. **Stories:** US-04.
 
 ### Work
 
@@ -173,6 +173,24 @@ viewing instructions after T05. Merge and run the full suite between waves.
 - Neither lower mode repairs connectors; word mode retains its narrow repair rule.
 - Default corpus output, preservation, and idempotence checks pass.
 - Full quality gates pass.
+
+### Completion evidence
+
+- Added public `format_text` acceptance tests for the exact US-04 example,
+  punctuation/primary/fallback fitting priority, and nearest overflow selection
+  across enabled categories.
+- Verified English and German vocabularies, custom primary terms, connector
+  repair in `words` only, following and preceding joins, sentence/hard-break
+  barriers, protected inline source, nested list prefixes, repeated connectors,
+  and idempotence. Existing connector, vocabulary, abbreviation, and safety
+  regressions remain in place.
+- Explicit `words` mode and the default both match the reviewed width-40 Mozart
+  golden output. No runtime or language-data change was needed; T01 had already
+  migrated the formatter to the canonical mode contract.
+- Full suite: 368 passed. `ruff format src tests` left all 33 files unchanged;
+  `ruff check --fix src tests` and `ty check src tests` passed. The worktree had
+  no `.venv`, so the installed project tools were used with `PYTHONPATH=src`;
+  ty used the existing project interpreter to resolve dependencies.
 
 ## T04: Report decisions according to the active mode
 
