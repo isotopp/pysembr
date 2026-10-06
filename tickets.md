@@ -330,6 +330,20 @@ explicitly unsplit, as agreed.
 
 **Depends on:** T05, T08. **Unblocks:** T10.
 
+**Status:** Done. Width-aware formatting selects the rightmost fitting safe
+boundary in category order: commas, other punctuation/spaced dashes, primary
+words, then enabled fallback words. Source codepoint width includes first and
+continuation prefixes; equality fits. Protected spans, hard markers, unsafe
+starts, hyphenated words, and non-ASCII whitespace remain unsplit. No arbitrary
+wrapping or empty segments are emitted; sentence boundaries stay separate.
+
+**Validation:** Public formatter TDD red/green cycles with full `uv run pytest`
+every cycle; final suite 155 passed on Python 3.14.2. Ruff format/check and mypy
+passed. Literal tests cover repeated segmentation, category/rightmost priority,
+punctuation beyond width, disabled categories/languages, exact widths, Unicode
+codepoints, list prefixes, width exhaustion, protected tokens, hard markers,
+unsafe starts, terminal whitespace, and unbreakable segments.
+
 ### Tasks
 
 - Implement category order: commas; semicolons/colons/spaced dashes;
