@@ -35,6 +35,8 @@ class ParagraphSource:
     continuation_column: int = 0
     ancestors: tuple[str, ...] = ()
     line_ending: str = "\n"
+    trailing_ending: str = ""
+    logical_to_source: tuple[int, ...] = ()
 
 
 @dataclass(frozen=True)
