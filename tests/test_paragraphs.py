@@ -70,7 +70,7 @@ def test_non_ascii_whitespace_and_stream_endings_are_preserved():
     assert format_text("\ufeff", Options()) == "\ufeff"
 
 
-def test_protected_blocks_and_list_prose_remain_exact_beside_ordinary_prose():
+def test_protected_blocks_and_definition_prose_remain_exact_beside_formatted_prose():
     source = """---
 key: value
 ---
@@ -120,6 +120,9 @@ Last. Next.
 """
     expected = source.replace("Before. After.", "Before.\nAfter.").replace(
         "Last. Next.", "Last.\nNext."
+    )
+    expected = expected.replace("- List. Sentence.", "- List.\n  Sentence.").replace(
+        "  - Child. Sentence.", "  - Child.\n    Sentence."
     )
     assert format_text(source, Options()) == expected
     assert format_text(expected, Options()) == expected

@@ -19,7 +19,7 @@ def format_paragraph(paragraph: ParagraphSource, options: Options) -> str:
 
 
 def _segment_paragraph(
-    paragraph: ParagraphSource, options: Options
+    paragraph: ParagraphSource, options: Options, marker_width: int = 0
 ) -> tuple[str, tuple[tuple[int, int], ...]]:
     text = paragraph.text
     folded = "".join(character.casefold() for character in text)
@@ -67,7 +67,9 @@ def _segment_paragraph(
     prefix = paragraph.first_prefix
     for end, next_start in [*sorted(breaks.items()), (len(text), len(text))]:
         while (
-            max(len(line) for line in re.split(r"\r\n|\r|\n", prefix + text[start:end]))
+            _source_width(
+                prefix + text[start:end], marker_width if end == len(text) else 0
+            )
             > options.width
         ):
             categories: list[list[tuple[int, int]]] = []
@@ -134,18 +136,17 @@ def _segment_paragraph(
 
 
 def format_text(text: str, options: Options) -> str:
-    """Reassemble ordinary prose and splice only validated paragraph edits."""
+    """Reassemble ordinary/list prose and splice only validated paragraph edits."""
     document = parse_document(text)
     plans = []
     edits = []
     for paragraph in document.paragraphs:
-        if any(
-            ancestor in {"list_item", "dl", "dd"} for ancestor in paragraph.ancestors
-        ):
+        if any(ancestor in {"dl", "dd"} for ancestor in paragraph.ancestors):
             continue
         chunks = _prepare_chunks(paragraph)
         breaks = [
-            list(_segment_paragraph(chunk, options)[1]) for chunk, marker in chunks
+            list(_segment_paragraph(chunk, options, len(marker.rstrip("\r\n")))[1])
+            for chunk, marker in chunks
         ]
         formatted = _render_chunks(chunks, breaks) + paragraph.trailing_ending
         plans.append((paragraph, chunks, breaks))
@@ -252,3 +253,8 @@ def _prepare_chunks(paragraph: ParagraphSource) -> list[tuple[ParagraphSource, s
         prefix = " " * paragraph.continuation_column
         start = marker_end
     return chunks
+
+
+def _source_width(text: str, marker_width: int) -> int:
+    lines = re.split(r"\r\n|\r|\n", text)
+    return max([len(line) for line in lines[:-1]] + [len(lines[-1]) + marker_width])
