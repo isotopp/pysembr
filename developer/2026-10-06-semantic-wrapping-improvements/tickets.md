@@ -169,7 +169,7 @@ algorithm stabilizes, preventing vocabulary changes from obscuring T02/T04.
 
 ## T04: Repair isolated connectors only when joined lines fit
 
-**Status:** Todo. **Dependencies:** T02, T03. **Story:** US-02.
+**Status:** Done. **Dependencies:** T02, T03. **Story:** US-02.
 
 ### Work
 
@@ -194,6 +194,23 @@ algorithm stabilizes, preventing vocabulary changes from obscuring T02/T04.
 - Every newly joined line fits width even when US-01 permits overflow elsewhere.
 - Ordinary short phrases and sentence boundaries remain untouched.
 - Quality gates pass and the precise repair exception is documented.
+
+### Completion evidence
+
+- The public Mozart repair regression failed before implementation with all
+  276 baseline tests passing. The completed full suite passes 287 tests,
+  including following-neighbor preference, preceding fallback, German exact
+  fits and both-neighbor failure, nested prefixes, hard-break markers,
+  repeated repairs, sentence/item/paragraph boundaries, case handling,
+  primary replacement and language-specific eligibility, punctuation/markup
+  exclusions, and safe Markdown replay with independently rendered meaning.
+- Repairs remove only internal segmentation boundaries, in source order to
+  a fixed point. Mandatory sentence boundaries and hard-break regions remain
+  separate; every repair uses strict emitted source width, including markers.
+- Current Mozart golden retains word order, supported rendered meaning, and
+  idempotence. Historical audit and epic baseline are unchanged. README
+  documents the exact reviewed connector exception and customization rules.
+- Full pytest, Ruff formatting/lint, and source/test ty checks pass.
 
 ## T05: Integrate reviewed English and German split inventories
 

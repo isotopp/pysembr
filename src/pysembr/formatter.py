@@ -3,7 +3,7 @@
 import re
 from dataclasses import replace
 
-from pysembr.languages import vocabulary, word_boundaries
+from pysembr.languages import connector_words, vocabulary, word_boundaries
 from pysembr.markdown import parse_document, safe_line_start, validate_replacements
 from pysembr.models import Options, ParagraphSource, Replacement
 from pysembr.source import apply_replacements
@@ -61,11 +61,13 @@ def _segment_paragraph(
         return match[0]
 
     _SENTENCE.sub(split, text)
-    output = []
     selected: list[tuple[int, int]] = []
     start = 0
     prefix = paragraph.first_prefix
     for end, next_start in [*sorted(breaks.items()), (len(text), len(text))]:
+        sentence_start = start
+        sentence_prefix = prefix
+        internal: list[tuple[int, int]] = []
         while (
             _source_width(
                 prefix + text[start:end], marker_width if end == len(text) else 0
@@ -134,18 +136,87 @@ def _segment_paragraph(
             if chosen is None:
                 break
             boundary, next_position = chosen
-            selected.append(chosen)
-            output.append(prefix + text[start:boundary])
+            internal.append(chosen)
             prefix = " " * paragraph.continuation_column
             start = next_position
-        output.append(prefix + text[start:end])
+        selected.extend(
+            _repair_connectors(
+                paragraph,
+                options,
+                internal,
+                sentence_start,
+                end,
+                sentence_prefix,
+                marker_width if end == len(text) else 0,
+            )
+        )
         if end < len(text):
             selected.append((end, next_start))
         start = next_start
         prefix = " " * paragraph.continuation_column
-    return paragraph.line_ending.join(output) + paragraph.trailing_ending, tuple(
-        selected
+    return (
+        _render_chunks([(paragraph, "")], [selected]) + paragraph.trailing_ending,
+        tuple(selected),
     )
+
+
+def _repair_connectors(
+    paragraph: ParagraphSource,
+    options: Options,
+    boundaries: list[tuple[int, int]],
+    start: int,
+    end: int,
+    first_prefix: str,
+    marker_width: int,
+) -> list[tuple[int, int]]:
+    connectors = connector_words(options)
+    continuation = " " * paragraph.continuation_column
+    while connectors:
+        segments = list(
+            zip(
+                [start, *(next_start for _, next_start in boundaries)],
+                [*(boundary for boundary, _ in boundaries), end],
+                strict=True,
+            )
+        )
+        repaired = False
+        for index, (segment_start, segment_end) in enumerate(segments):
+            if paragraph.text[segment_start:segment_end].casefold() not in connectors:
+                continue
+            if any(
+                a < segment_end and segment_start < b
+                for a, b in paragraph.protected_ranges
+            ):
+                continue
+            neighbors = []
+            if index + 1 < len(segments):
+                neighbors.append((index, segment_start, segments[index + 1][1], index))
+            if index > 0:
+                neighbors.append(
+                    (index - 1, segments[index - 1][0], segment_end, index - 1)
+                )
+            for boundary_index, joined_start, joined_end, prefix_index in neighbors:
+                if any(
+                    a < joined_end and joined_start < b
+                    for a, b in paragraph.hard_breaks
+                ):
+                    continue
+                prefix = first_prefix if prefix_index == 0 else continuation
+                if (
+                    _source_width(
+                        prefix + paragraph.text[joined_start:joined_end],
+                        marker_width if joined_end == end else 0,
+                    )
+                    <= options.width
+                ):
+                    boundaries.pop(boundary_index)
+                    repaired = True
+                    break
+            if repaired:
+                break
+        if not repaired:
+            break
+    return boundaries
 
 
 def format_text(text: str, options: Options) -> str:

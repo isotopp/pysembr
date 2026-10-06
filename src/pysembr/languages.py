@@ -68,3 +68,20 @@ def word_boundaries(text: str, words: tuple[str, ...]) -> tuple[int, ...]:
         and (match.start() == 0 or text[match.start() - 1] not in "-\u2010\u2011")
         and (match.end() == len(text) or text[match.end()] not in "-\u2010\u2011")
     )
+
+
+def connector_words(options: Options) -> frozenset[str]:
+    """Return reviewed connectors present in each language's primary inventory."""
+    if not options.word_splitting:
+        return frozenset()
+    subsets = {
+        "english": {"and", "but", "or"},
+        "german": {"und", "aber", "oder"},
+    }
+    selected: set[str] = set()
+    for language in options.languages:
+        terms = options.vocabulary_overrides.get(
+            f"conjunctions-{language}", _DATA["languages"][language]["conjunctions"]
+        )
+        selected.update(subsets[language] & {term.casefold() for term in terms})
+    return frozenset(selected)
