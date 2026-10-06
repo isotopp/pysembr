@@ -211,6 +211,21 @@ until T14; release version metadata is finalized in T16.
 
 **Depends on:** T04. **Unblocks:** T07, T10.
 
+**Status:** Done. The configured Markdown adapter selects prose through the
+parser's live paragraph rule and container state, retaining original source
+ranges, markers (including native task checkboxes), indentation columns,
+ancestor contexts, line endings, and logical-to-original character offsets.
+Source gaps preserve all protected blocks and blank lines without rendering.
+NUL-affected or ambiguous prose mappings remain untouched. Inline protection
+and safe-boundary validation remain T07 work.
+
+**Validation:** TDD red/green cycles at `parse_document` and source-splice seams
+caught partially consumed tabs and native checkbox physical-line origins.
+Full `uv run pytest` (15 passed), Ruff format/check, and mypy pass on Python
+3.14.2. Regression fixtures cover the protected profile, nested/task/numbered
+lists, multiple item paragraphs, colon/tilde definitions, lazy continuations,
+tabs, BOM/CRLF/mixed endings, missing final newline, and malformed constructs.
+
 ### Tasks
 
 - Recognize prose, blank lines, ATX/Setext headings, fenced/indented code,
