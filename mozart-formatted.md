@@ -180,10 +180,7 @@ of his death remain uncertain,
 though kidney failure,
 possibly exacerbated by rheumatic fever,
 is the most commonly cited diagnosis among historians.
-He was buried in a common grave at the St.
-Marx cemetery,
-as was customary for those
-who could not afford a proper burial.
+He was buried in a common grave at the St. Marx cemetery, as was customary for those who could not afford a proper burial.
 His wife Constanze,
 who had lost four of their six children,
 would spend the rest
