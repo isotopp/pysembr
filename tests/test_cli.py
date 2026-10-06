@@ -145,6 +145,24 @@ def test_help_describes_options_and_pipeline_file_examples(run_cli: CliRunner):
     assert result.stderr == b""
 
 
+def test_help_explains_cumulative_split_modes_and_aliases(run_cli: CliRunner):
+    result = run_cli("--help")
+    assert result.returncode == 0
+    help_text = " ".join(result.stdout.decode().split())
+    for phrase in (
+        "sentences (sentence, 1): sentence boundaries only",
+        "width does not subdivide sentences",
+        "punctuation (comma, 2): includes sentences, plus commas and other internal punctuation",
+        "words (word, 3): includes punctuation, plus selected language split words and connector repair",
+        "default: words",
+        "Existing Markdown hard breaks and structure can still keep lines separate.",
+        "INI key: split-mode (for example, split-mode = words); a CLI value overrides the selected INI value.",
+        "safe boundaries can still produce lines over width",
+    ):
+        assert phrase in help_text
+    assert result.stderr == b""
+
+
 @pytest.mark.parametrize(
     "file_input,file_output",
     [(False, False), (False, True), (True, False), (True, True)],

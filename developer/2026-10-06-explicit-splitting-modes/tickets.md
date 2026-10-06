@@ -267,7 +267,7 @@ viewing instructions after T05. Merge and run the full suite between waves.
 
 ## T05: Document modes and migration in help, README, and acceptance guidance
 
-**Status:** Planned. **Dependencies:** T02, T03. **Stories:** US-05.
+**Status:** Done. **Dependencies:** T02, T03. **Stories:** US-05.
 
 ### Work
 
@@ -292,6 +292,30 @@ viewing instructions after T05. Merge and run the full suite between waves.
 - Examples are checked and default behavior is described accurately.
 - CLI help changes pass the full quality gates. Documentation completion evidence
   identifies any diagnostic examples finalized after T04.
+
+### Completion evidence
+
+- Added cumulative mode descriptions, aliases, the INI key/default/precedence,
+  and examples for all modes to installed CLI help. Added a public installed-CLI
+  help test; it failed before the help update and passes afterward.
+- Updated the README with the mode contract, width behavior, examples, old-flag
+  migration mapping, canonical INI setting, and macOS/Linux and Windows
+  Shellfilter command profiles. The three documented width-25 commands were
+  run through the installed CLI and matched the shown output.
+- Updated `tests/README.md` with mode-specific acceptance seams and added the
+  active mode-contract pointer to `AGENTS.md`. Earlier design documents and
+  corpus audits remain historical records.
+- No concrete `--explain` output example was added while T04's report changes
+  were in progress. T07 will complete the integrated mode/report cross-check.
+- Validation: full suite, 397 passed; `ruff format src tests` left all 35 files
+  unchanged; targeted Ruff checks for `options.py` and `test_cli.py` passed, as
+  did `ty check src tests`. This worktree had no `.venv`, so installed project
+  tools were used with its source on `PYTHONPATH`; ty was pointed at the
+  project's Python 3.14 environment. The whole-project `ruff check --fix src
+  tests` auto-fixed ten unrelated import-order findings and remained nonzero on
+  the base `SplitMode: TypeAlias` finding. I reverted the unrelated edits to
+  keep T05 scoped. T04 is changing the alias to Python 3.14 `type` syntax; rerun
+  the full Ruff gate after T04 is merged.
 
 ## T06: Add and verify the section-1 manual
 

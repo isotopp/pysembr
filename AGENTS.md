@@ -18,6 +18,13 @@ and its [completed stories](developer/2026-10-06-semantic-wrapping-improvements/
 That accepted follow-up supersedes the original design in those areas; its
 [tickets](developer/2026-10-06-semantic-wrapping-improvements/tickets.md) record validation and status.
 
+Before changing split-mode parsing, mode selection, CLI help, or migration
+guidance, read the current [explicit splitting modes epic](developer/2026-10-06-explicit-splitting-modes/user-stories.md)
+and its [tickets](developer/2026-10-06-explicit-splitting-modes/tickets.md).
+They define `sentences`, `punctuation`, and `words`, accepted aliases, and the
+replacement for the former boolean controls. The original 2.0.0 mode table is
+historical; retain its other contracts unless the current stories amend them.
+
 The rewrite replaced legacy source and tests with contract-derived modules
 and regression tests. Use [language-data-v2.json](developer/2026-10-06-version-2/language-data-v2.json)
 for the original approved language baseline and aliases. For current word or
