@@ -324,3 +324,17 @@ def test_document_safety_width_extremes_malformed_input_and_mixed_endings(
     assert formatted.split() == source.split()
     assert format_text(formatted, Options(width=width)) == formatted
     assert render_meaning(formatted) == render_meaning(source)
+
+
+def test_mozart_width_40_cli_matches_reviewed_output(run_cli: CliRunner):
+    root = Path(__file__).parents[1]
+    source = (root / "mozart.md").read_bytes()
+    expected = (root / "mozart-formatted.md").read_bytes()
+    result = run_cli("--width", "40", input=source)
+    assert result.returncode == 0
+    assert result.stderr == b""
+    assert result.stdout == expected
+    text = expected.decode("utf-8")
+    assert text.split() == source.decode("utf-8").split()
+    assert format_text(text, Options(width=40)) == text
+    assert render_meaning(text) == render_meaning(source.decode("utf-8"))

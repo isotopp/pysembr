@@ -606,6 +606,14 @@ cleanup, config discovery/inspection/explicit selection, Latin-1, and UTF-16
 BOM/CRLF preservation. Configuration homes were isolated for verification;
 existing user configuration was not changed.
 
+**Final user-requested audit:** The exact width-40 command also succeeded in
+the primary checkout with its actual configuration. [Formatted output](../../mozart-formatted.md)
+and the [line-by-line audit](mozart-width-40-audit.md) account for all 42 long
+lines and all 33 adjacent pairs that fit (30 strictly below 40, three exactly
+40). All words/order, protected source, idempotence, and rendered meaning are
+preserved. An installed CLI regression pins the reviewed width-40 output;
+final repository gates pass with 244 tests.
+
 **Earlier tooling evidence:** The user authorized this slice ahead of T15:
 `uv version` set 2.0.0, ty replaced mypy, bumpver was removed, and the backend
 became `uv_build>=0.9.27,<0.10`. Initial version TDD red/green and 156-test suite
