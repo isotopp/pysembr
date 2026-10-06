@@ -133,7 +133,12 @@ def test_mozart_relationship_uses_nearest_overflow_boundary():
         "This relationship would fester for eight years before breaking apart entirely."
     )
     assert format_paragraph(
-        parse_document(source).paragraphs[0], Options(width=40)
+        parse_document(source).paragraphs[0],
+        Options(
+            width=40,
+            languages=("english",),
+            vocabulary_overrides={"split-words-english": ()},
+        ),
     ) == (
         "This relationship would fester for eight years\nbefore breaking apart entirely."
     )
