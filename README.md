@@ -46,6 +46,12 @@ Success exits 0, invalid options/configuration exit 2, and input/output or
 formatting failures exit 1. Diagnostics go to stderr. Inspection commands do not
 read or format input; `--show-options` and `--list-languages` validate configuration.
 
+From the repository checkout, view the section-1 manual with:
+
+```bash
+man ./docs/pysembr.1
+```
+
 ## Splitting modes
 
 Choose one cumulative mode with `--split-mode`; the matching INI key is

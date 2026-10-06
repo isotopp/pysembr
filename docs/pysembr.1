@@ -1,0 +1,402 @@
+.TH PYSEMBR 1 "October 6, 2026" "pysembr 2.1.0" "User Commands"
+.SH NAME
+pysembr \- Markdown-aware semantic line breaking
+.SH SYNOPSIS
+.nf
+\fBpysembr\fR [\fIOPTIONS\fR]
+.fi
+.SH DESCRIPTION
+.B pysembr
+reads Markdown text from standard input or a file, joins soft-wrapped prose,
+and writes formatted text to standard output or a file. It splits sentences
+and, according to the selected mode, splits long sentences at punctuation or
+language-specific words. Input is always treated as Markdown, including files
+whose names end in
+.BR .txt .
+Formatting follows Semantic Line Breaks approximately.
+.PP
+The default width is 75 Unicode code points in emitted source. It counts list
+indentation, markers, inline markup, and preserved hard-break markers. Equality
+fits. Width is a soft limit in punctuation and words modes: protected content,
+Markdown safety, or the absence of a usable boundary can leave a line longer
+than the target. There is no arbitrary whitespace or word breaking.
+.SS Splitting modes
+The modes are cumulative. Sentence boundaries remain enabled in every mode.
+.TP
+.B sentences
+Split at recognized sentence boundaries only. Width does not subdivide a
+sentence. Hard breaks and document structure still preserve their boundaries.
+.TP
+.B punctuation
+Includes
+.B sentences
+mode and subdivides overlong segments at internal punctuation: commas first,
+then semicolons, colons, and space-separated en or em dashes.
+.TP
+.B words
+Includes
+.B punctuation
+mode and also enables selected-language primary conjunction/clause words,
+followed by fallback words and prepositions, then narrow connector repair.
+This is the default.
+.PP
+For each long segment, the formatter uses the first enabled category that has a
+safe fitting boundary, selecting its rightmost fitting candidate. When none
+fits, it may select the nearest safe eligible boundary beyond the width. It
+then repeats on the remainder. Punctuation remains on the preceding line;
+word boundaries split before the word. Separate sentences are never joined to
+fill a line. New breaks are checked against Markdown structure and rendering.
+.SS Migration from earlier options
+The previous defaults, with punctuation and both word categories enabled,
+become
+.BR --split-mode=words .
+The former
+.B --no-word-splitting
+behavior becomes
+.BR --split-mode=punctuation .
+Sentence-only formatting is newly available as
+.BR --split-mode=sentences .
+The former primary-only combination
+.B --word-splitting --no-extended
+has no exact equivalent: words mode also enables fallback words, while
+punctuation mode disables all word boundaries. The following old CLI options
+are removed:
+.BR --word-splitting ,
+.BR --no-word-splitting ,
+.BR --extended ,
+.BR -e ,
+.BR --no-extended .
+The INI keys
+.B word-splitting
+and
+.B extended
+are removed too. Use the single
+.B --split-mode
+option or
+.B split-mode
+configuration key instead.
+.SH OPTIONS
+.TP
+.BI "-i, --infile " FILE
+Read
+.I FILE
+instead of standard input. A relative path is resolved from the working
+directory.
+.TP
+.BI "-o, --outfile " FILE
+Write to
+.I FILE
+instead of standard output. The file is replaced atomically after successful
+formatting and writing; the input may be the same path.
+.TP
+.BI "-w, --width " N
+Set the positive source-character width. The default is 75. See the
+.B Splitting modes
+section and width rules above. Sentence mode ignores width when splitting
+sentences.
+.TP
+.BI "-l, --languages " LIST
+Select comma-separated language names or aliases, or
+.B all
+(the default). Canonical names are
+.B english
+and
+.BR german ;
+aliases are
+.BR en ,
+.BR eng ,
+.BR de ,
+.BR deu ,
+and
+.BR ger .
+Selections are case-insensitive, deduplicated, and processed in canonical
+order. Language selection affects word boundaries and abbreviation
+recognition; it does not detect the input language.
+.TP
+.BI "--split-mode " MODE
+Choose one cumulative mode. The default is
+.BR words .
+Accepted values and aliases are:
+.RS
+.TP
+.B sentences
+Aliases:
+.BR sentence ,
+.BR 1 .
+.TP
+.B punctuation
+Aliases:
+.BR comma ,
+.BR 2 .
+.TP
+.B words
+Aliases:
+.BR word ,
+.BR 3 .
+.RE
+.TP
+.BI "--encoding " CODEC
+Use the named text codec. The default
+.B auto
+detects UTF-8, UTF-16 LE/BE, or UTF-32 LE/BE from a byte-order mark (BOM), and
+uses UTF-8 when no BOM is present. Other BOM-less encodings require an explicit
+codec, for example
+.BR latin-1 .
+Decoding and encoding are strict. A detected BOM must agree with an explicit
+codec; generic UTF-16 and UTF-32 require a matching BOM. The original BOM and
+its presence or absence are preserved.
+.TP
+.BI "-c, --config-file " FILE
+Use only this INI file instead of the default configuration search. A relative
+path is resolved from the working directory. The file must contain a matching
+section.
+.TP
+.BI "-s, --config-section " SECTION
+Select this exact section rather than using the default or working-directory
+path match. It applies to the configuration search unless
+.B --config-file
+is also supplied.
+.TP
+.B --list-languages
+List canonical language names and exit.
+.TP
+.B --show-options
+Print effective options and the selected INI section as JSON, then exit. This
+validates configuration but does not read or format input.
+.TP
+.B --explain
+Report selected formatting decisions and width exceptions on standard error.
+Locations refer to final output lines. The formatted output is unchanged; with
+file output, explanations are emitted only after the atomic replacement
+succeeds. This is a command-line-only option, not an INI setting.
+.TP
+.B --version
+Print the installed version and exit.
+.TP
+.BR -h , " --help"
+Print concise option help, cumulative-mode summaries, and examples, then exit.
+.SH CONFIGURATION
+Configuration uses INI syntax with literal values. CLI values override the
+selected section, which overrides built-in defaults. Files and sections are not
+merged. Help and version do not require valid configuration; inspection
+commands do not read input.
+.PP
+On macOS and Linux, pysembr searches
+.I ./.sembr
+then
+.IR ~/.sembr .
+On Windows, it searches
+.I .\esembr.ini
+then
+.IR %APPDATA%\esembr\esembr.ini .
+When
+.B APPDATA
+is unset, the second Windows location is
+.IR ~/sembr.ini .
+An explicitly selected
+.B --config-file
+replaces this search.
+.PP
+Without
+.BR --config-section ,
+the first matching section in file order is selected. A section named
+.B [default]
+matches, as does a normalized absolute path section containing the working
+directory. The first matching section stops the search; a preceding
+.B [default]
+therefore takes precedence over a later path section. If no section matches in
+one default candidate file, the next candidate is searched. The INI
+.B [DEFAULT]
+section can provide inherited values but does not itself select a section.
+.PP
+The ordinary keys mirror the CLI options:
+.BR infile ,
+.BR outfile ,
+.BR width ,
+.BR languages ,
+.BR split-mode ,
+.BR encoding ,
+and
+.BR list-languages .
+Hyphens and underscores are interchangeable in keys. The inspection and
+selection controls
+.BR show-options ,
+.BR config-file ,
+and
+.B config-section
+are not INI settings. The
+.B explain
+option is command-line-only. Unknown or conflicting selected keys and invalid
+values are errors. Values in unselected sections are not necessarily
+validated.
+.PP
+The following six configuration-only keys replace the corresponding shipped
+vocabulary list for one language:
+.BR conjunctions-english ,
+.BR conjunctions-german ,
+.BR split-words-english ,
+.BR split-words-german ,
+.BR abbreviations-english ,
+and
+.BR abbreviations-german .
+Values are comma-separated, stripped, and deduplicated without regard to case.
+An empty value clears that list; a missing key retains the shipped list. Word
+entries must be single words; abbreviations may contain spaces. These lists
+affect the
+.B words
+mode, except abbreviation lists, which affect sentence recognition in every
+mode. Overlapping word entries use the conjunction category's priority.
+.PP
+Example:
+.nf
+[default]
+width = 60
+languages = en,de
+split-mode = punctuation
+conjunctions-english = and, but, because
+split_words_german = mit, ohne, zwischen
+.fi
+.SH FILES
+.TP
+.I ./.sembr
+First default configuration file on macOS and Linux.
+.TP
+.I ~/.sembr
+Second default configuration file on macOS and Linux.
+.TP
+.I ./sembr.ini
+First default configuration file on Windows.
+.TP
+.I %APPDATA%/sembr/sembr.ini
+Second default configuration file on Windows when
+.B APPDATA
+is set.
+.TP
+.I ~/sembr.ini
+Fallback second configuration file on Windows when
+.B APPDATA
+is unset.
+.PP
+Relative input and output file names are resolved from the working directory,
+not from the configuration file's directory.
+.SH FORMATTING AND DATA
+.SS Markdown
+The adopted dialect is CommonMark with pipe tables and native task lists,
+plus definition lists, YAML front matter, footnotes, and dollar math.
+Headings, code, block quotes, thematic breaks, HTML blocks, references,
+tables, recognized front matter, footnote definitions, and block math are
+protected. Whole links and images, inline code and HTML, math, footnote
+references, and recognized bare URLs are protected inside prose. Protected
+source is left as written. Hard breaks marked by two or more spaces or a
+backslash, blank lines, and document structure are preserved. Soft-wrapped
+prose lines are joined and ASCII spaces/tabs between prose words are
+normalized. Unsafe Markdown boundaries are skipped; ambiguous affected prose
+is preserved.
+.SS Sentences and width
+Recognized sentence endings include clusters of
+.BR . ,
+.BR ! ,
+and
+.BR ?
+with adjacent closing quotes or brackets. Decimals, initials, selected
+abbreviations, and punctuation inside protected spans do not create ordinary
+sentence breaks. Abbreviation endings are ambiguous and are handled
+conservatively. Existing hard breaks or document structure can still split a
+sentence in
+.B sentences
+mode. Protected content and unbreakable segments may exceed width in any mode.
+.SS Languages
+English and German are enabled together by default. Split-word matching uses
+the shipped reviewed inventories, selected languages, and any configured
+replacements. Matching is case-insensitive and limited to whole words; it is
+lexical rather than grammatical. Connector repair applies only in words mode.
+It repairs exact standalone English fragments
+.BR and ,
+.BR but ,
+and
+.BR or ,
+and German fragments
+.BR und ,
+.BR aber ,
+and
+.BR oder
+when they belong to an enabled primary inventory. It joins a connector to the
+following segment if that fits, otherwise to the preceding segment if that
+fits. It never crosses a sentence or hard break.
+.SH INPUT AND OUTPUT
+With neither file option, pysembr reads standard input and writes standard
+output. Each file option independently takes precedence over its corresponding
+stream. Relative paths are resolved from the working directory. Errors and
+explanations go to standard error; explanations do not change formatted output.
+.PP
+For file output, pysembr reads the input completely, writes and closes an
+exclusive random-suffix temporary file in the destination directory, then
+uses path replacement to replace the destination. Input and output may be the
+same path. A handled failure before replacement leaves the destination intact
+and removes this run's temporary file. Standard output has ordinary stream
+semantics, not atomic replacement semantics.
+.SS Encoding and line endings
+Input and output use binary streams so the selected encoding and original BOM
+can be preserved. With
+.B auto
+and no BOM, input is UTF-8. Untouched source retains its original CRLF, CR, or
+LF terminators. New lines in reformatted prose use that paragraph's first
+terminator, otherwise the document's first terminator, otherwise LF. Mixed
+endings outside reformatted prose remain unchanged. Final-newline presence,
+blank-line counts, and empty input are preserved.
+.SH EXAMPLES
+Format standard input using each mode at width 25:
+.nf
+printf 'Alpha beta, gamma delta and epsilon zeta. Next.\en' | \\
+    pysembr --split-mode sentences --width 25
+printf 'Alpha beta, gamma delta and epsilon zeta. Next.\en' | \\
+    pysembr --split-mode punctuation --width 25
+printf 'Alpha beta, gamma delta and epsilon zeta. Next.\en' | \\
+    pysembr --split-mode words --width 25
+.fi
+.PP
+Run the same filter in a pipeline, or process a separate file:
+.nf
+cat input.md | pysembr --width 60 > output.md
+pysembr --infile input.md --outfile output.md
+.fi
+.PP
+Replace a file with its formatted version. Input is read before output
+replacement, so both options may name the same file:
+.nf
+pysembr --infile note.md --outfile note.md
+.fi
+.PP
+Explain decisions while keeping formatted text on standard output:
+.nf
+pysembr --explain < input.md > output.md 2> decisions.log
+.fi
+.PP
+Inspect the effective configuration or list languages without formatting:
+.nf
+pysembr --show-options
+pysembr --list-languages
+.fi
+.PP
+To view the source-checkout manual locally, run
+.BR "man ./docs/pysembr.1" .
+The README also documents configuring Shellfilter in PyCharm and other
+IntelliJ-based editors to filter a selected Markdown region.
+.SH EXIT STATUS
+.TP
+.B 0
+Formatting or inspection completed successfully.
+.TP
+.B 1
+Input, output, decoding, encoding, or formatting failed. A file destination
+is left intact when a handled failure occurs before replacement.
+.TP
+.B 2
+Command-line syntax, option values, or configuration are invalid.
+.PP
+Errors and explanations are written to standard error.
+.SH SEE ALSO
+.BR README.md ,
+in the source checkout for PyCharm and IntelliJ Shellfilter setup, and
+.I https://sembr.org/
+for the Semantic Line Breaks guidelines.
