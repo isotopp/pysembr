@@ -8,7 +8,7 @@ splitting without combining overlapping boolean switches.
 
 ## Context and status
 
-Planned on 2026-10-06. This epic follows the completed
+Implemented and verified on 2026-10-06. This epic follows the completed
 [semantic wrapping improvements](../2026-10-06-semantic-wrapping-improvements/user-stories.md).
 The user confirmed `--split-mode sentences|punctuation|words`, with `words` as
 its default, replacing `--word-splitting` and `--extended`.
@@ -44,7 +44,7 @@ assigned, and this document does not authorize publication.
 
 ## US-01: Select one explicit splitting mode
 
-**Status:** Planned.
+**Status:** Done.
 
 **As a** command-line user, **I want** one named splitting mode, **so that** I can
 choose the degree of segmentation without understanding two interacting flags.
@@ -58,7 +58,8 @@ choose the degree of segmentation without understanding two interacting flags.
 3. Expose the effective mode through `--show-options` and the public formatting
    options model. Document that each mode includes the preceding modes.
 4. Reject unknown or empty modes with the existing option/configuration error
-   behavior; do not introduce numeric aliases or a short option.
+   behavior. Accept only the canonical values and aliases listed by US-02
+   through US-04; do not add other aliases or a short option.
 5. Remove `--word-splitting`, `--no-word-splitting`, `--extended`, `-e`, and
    `--no-extended`, their model fields, and their INI settings. Reject selected
    configurations containing removed keys with a useful migration error.
@@ -71,7 +72,7 @@ choose the degree of segmentation without understanding two interacting flags.
 
 ## US-02: Format one sentence per line without internal subdivision
 
-**Status:** Planned.
+**Status:** Done.
 
 **As a** writer using simple semantic line breaks, **I want** `sentences` mode,
 **so that** each ordinary sentence occupies one line regardless of its length.
@@ -111,7 +112,7 @@ The long first sentence is intentional and remains identical at width 75.
 
 ## US-03: Add internal punctuation wrapping
 
-**Status:** Planned.
+**Status:** Done.
 
 **As a** writer wanting moderate wrapping, **I want** `punctuation` mode,
 **so that** long sentences can split at punctuation without lexical heuristics.
@@ -146,7 +147,7 @@ The second line exceeds width because it has no eligible internal punctuation.
 
 ## US-04: Enable all supported splitting in word mode
 
-**Status:** Planned.
+**Status:** Done.
 
 **As a** writer wanting the full formatter, **I want** `words` mode,
 **so that** punctuation and language-specific boundaries work together.
@@ -185,7 +186,7 @@ The extra break before `and` is available only in `words` mode.
 
 ## US-05: Explain and document the chosen mode
 
-**Status:** Planned.
+**Status:** Done.
 
 **As a** user configuring pipelines or an editor, **I want** accurate mode
 explanations and migration guidance, **so that** I can predict output and update
@@ -215,7 +216,7 @@ be drafted once US-01 fixes the option contract.
 
 ## US-06: Provide a complete command-line manual page
 
-**Status:** Planned.
+**Status:** Done.
 
 **As a** terminal user, **I want** a man page in `docs/`, **so that** I can consult
 pysembr's options, formatting rules, and configuration in a standard manual.
@@ -242,3 +243,13 @@ pysembr's options, formatting rules, and configuration in a standard manual.
    documentation site are outside this story.
 
 **Dependencies:** US-05 and the finalized CLI/configuration contract. Deliver last.
+
+
+## Completion evidence
+
+All six stories are implemented. The [tickets](tickets.md) record the delivered
+mode behavior, option migration, tests, docs, and dependencies. Integrated
+verification passed with 404 tests, Ruff, ty, lockfile validation, rendered man
+page checks, and fresh-wheel smoke tests. The default `words` output at width 40
+remains byte-identical to the audited Mozart golden; each mode's examples are
+verified against the installed command.
