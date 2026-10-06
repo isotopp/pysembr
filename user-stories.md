@@ -14,8 +14,10 @@ boundaries without changing the wording or Markdown structure.
 ## Scope and decision status
 
 - Target release: 2.0.0. Backward compatibility is not required.
-- Existing source, tests, and documentation may be replaced during
-  implementation. This epic does not itself remove them.
+- Target Python 3.14+. T04 deletes all legacy source and tests and creates fresh
+  modules/tests from the confirmed contract. Approved language data is preserved
+  in [language-data-v2.json](language-data-v2.json); legacy implementation and
+  tests are not reference specifications. Documentation is replaced as needed.
 - Always interpret input as Markdown, regardless of filename or input source.
 - Reformat ordinary paragraphs and prose in bullet, numbered, and definition
   lists. Preserve other supported special environments.
@@ -28,8 +30,13 @@ boundaries without changing the wording or Markdown structure.
   breaks, blank lines, list nesting, and protected content.
 - Write file output to an exclusively created sibling temporary file with a
   random suffix, then use `Path.replace()` after successful completion.
-- Exact CLI spelling, configuration design, and several edge-case policies
-  remain open below. Legacy flags and configuration are not requirements.
+- Retain useful existing CLI/configuration conventions and shipped word lists.
+  Invalid options stop the run with a clear error and nonzero exit code.
+- Preserve input encoding/BOM and final-newline presence; empty input yields
+  empty output. Extra file metadata/concurrency/durability handling is excluded.
+- Prefer an external Markdown parser and adopt its configured syntax.
+  The concrete contract and parser selection were confirmed on 2026-10-06 in
+  [design-v2.md](design-v2.md); production implementation has not started.
 
 ## US-01: Use the formatter in a pipeline
 
@@ -292,7 +299,7 @@ Term
 
 ## Dependencies and delivery order
 
-1. Resolve the open decisions below and confirm the implementation contract.
+1. T01-T03: Complete; the implementation contract is confirmed.
 2. Establish block recognition and paragraph reconstruction (US-03, US-04).
 3. Implement protected inline spans, sentences, and internal segmentation
    (US-05, US-06, US-07).
@@ -300,30 +307,33 @@ Term
 5. Integrate stream/file I/O and atomic replacement (US-01, US-02).
 6. Complete documentation, validation, and release metadata (US-10).
 
-## Open decisions before implementation
+## Confirmed implementation decisions
 
-These are not silently settled by this epic:
+The user's ticket edits settle retention of useful configuration conventions,
+existing English/German inventories, failure on invalid options, preservation
+of encoding/BOM/final-newline presence, empty output for empty input, preference
+for an external parser, and exclusion of extra file-semantics handling.
 
-- **CLI and configuration:** Exact options, configuration file format/search,
-  precedence, word-list extension versus replacement, and invalid values.
-  The old interface may be discarded.
-- **Languages:** English and German are agreed. Enabling both by default is
-  proposed; exact lists, case handling, and abbreviation data need agreement.
-- **Markdown dialect:** CommonMark block behavior plus explicitly supported
-  extensions; exact table/front-matter forms, footnotes, math, task lists,
-  definition-list variants, and malformed or ambiguous syntax handling.
-- **Parsing strategy:** Whether source-preserving Markdown parsing needs a
-  dependency or can meet the contract with a focused implementation.
-- **Spacing and width:** Exact space normalization, tabs, Unicode width
-  measurement, and behavior when list indentation consumes the entire width.
-  Source-character counting is agreed; display-cell width is not required.
-- **Text I/O:** Encoding, BOMs, line-ending preservation, missing final newline,
-  and empty input behavior.
-- **File semantics:** Permissions, symbolic links, metadata preservation,
-  concurrent writers, and whether crash-durable synchronization is needed
-  beyond atomic replacement.
-- **Safe boundaries:** Exact heuristics for abbreviations, closing punctuation,
-  protected inline constructs, and preventing newly introduced Markdown syntax.
+[design-v2.md](design-v2.md) records the choices confirmed on 2026-10-06:
+
+- **CLI/configuration:** Retain INI search and first-match selection; specify
+  exact retained/new/removed options, defaults, precedence, validation, and
+  per-language replacement word lists.
+- **Languages:** Both enabled by default as in the current version; preserve
+  the current inventories while allocating words to the new categories.
+  Exact matching rules and initial abbreviation data are confirmed.
+- **Parser/dialect:** Use markdown-it-py plus mdit-py-plugins, CommonMark
+  with tables, native task lists, colon/tilde definitions, YAML front matter,
+  footnotes, and dollar math. Source-preserving adapter feasibility is probed;
+  full implementation is deferred to the corresponding tickets.
+- **Spacing/width/safety:** Use the specified normalization, tab/content columns,
+  consumed-width behavior, hard-break treatment, inline protection, and
+  rejection of breaks introducing unintended Markdown structure.
+- **Text I/O:** Use BOM detection, UTF-8 fallback, explicit codecs for other
+  BOM-less encodings, paragraph-based newline preservation, and BOM-only input.
+
+T01-T03 are Done. T04-T16 remain To do; T04 is unblocked and starts by replacing
+all legacy source/tests and setting the Python 3.14+ target.
 
 ## References
 

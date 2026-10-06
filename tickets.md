@@ -3,7 +3,8 @@
 Epic: [user-stories.md](user-stories.md).
 
 Tickets are listed in implementation order. Dependencies are completion
-prerequisites, not just related work. All tickets start as **To do**.
+prerequisites, not just related work. T01-T03 are **Done** (confirmed 2026-10-06);
+T04-T16 remain **To do**.
 The decision tickets resolve the epic's open questions; they do not reopen
 agreed behavior. No implementation is authorized by the existence of this
 backlog alone.
@@ -33,21 +34,41 @@ T01 and T02 can proceed independently. After T04, options, block recognition,
 and I/O can proceed independently. The listed order is a valid sequential
 implementation path; dependency edges define which work may overlap.
 
+The confirmed T01-T03 contract is in [design-v2.md](design-v2.md). Research and
+the passing feasibility experiment are in [parser-research.md](parser-research.md)
+and [parser-probe.py](parser-probe.py). T04 is unblocked and targets Python 3.14+
+with all legacy source and tests removed at its start. Approved language data is
+recorded in [language-data-v2.json](language-data-v2.json). Production code has
+not yet changed.
+
 ## T01: Confirm CLI, configuration, and I/O contract
 
 **Depends on:** None. **Unblocks:** T04.
+
+**Status:** Done; user confirmed 2026-10-06. User edits below are incorporated into
+[the T01 contract](design-v2.md#t01-cli-and-configuration).
+Evidence: inspected current options, config-selection tests, CLI transport,
+and existing word lists. Flag/data/encoding details are confirmed. Extra file
+metadata/concurrency/durability concerns are excluded by
+the user's decision, not unresolved acceptance criteria.
 
 ### Tasks
 
 - Propose exact CLI options for input/output paths, width, language selection,
   and configuration. Decide which convenience or inspection flags to retain.
+  - We will retain the options and configuration format where it suits our purposes.
+  - Add new options where necessary, retaining the style and method of existing configuration.
 - Specify configuration format, search locations, precedence, and word-list
   extension versus replacement semantics. Specify invalid-value behavior.
+  - See previous answers. Invalid options stop the run with a clear error message and a non-zero exit code.
 - Confirm whether English and German are both enabled by default and whether
   users can disable word-based splitting.
+  - We ship with english and german as in the previous version. Also, their word lists.
 - Define encoding, BOM, newline, missing-final-newline, and empty-input policy.
+  - We pass on the encoding and BOM, and a missing final newline as found. Empty input produces empty output.
 - Define replacement behavior for permissions, metadata, symlinks, and
   concurrent writers, plus any durability requirement beyond atomic rename.
+  - We ignore these problems.
 - Record proposals and obtain the user's decisions; update the epic with the
   settled contract without changing already agreed requirements.
 
@@ -63,10 +84,16 @@ implementation path; dependency edges define which work may overlap.
 
 **Depends on:** None. **Unblocks:** T03, T04.
 
+**Status:** Done; user confirmed 2026-10-06. Dialect, indentation, whitespace,
+sentence heuristics, structural safety, and fixture plan are documented in
+[the T02 contract](design-v2.md#t02-markdown-and-segmentation).
+The contract includes syntax inherited from the selected parser.
+
 ### Tasks
 
 - Specify supported table and front-matter syntax, colon-marker definitions,
   task lists, footnotes, math, and malformed or ambiguous block handling.
+  - We prefer to add an external dependency for markdown parsing, and will adopt the syntax this requires. Make suggestions.
 - Specify list tabs, lazy continuation, marker spacing, and nesting rules.
 - Define normalization outside protected inline content, hard-break handling,
   Unicode source-character counting, and indentation at or beyond the width.
@@ -89,11 +116,22 @@ implementation path; dependency edges define which work may overlap.
 
 **Depends on:** T02. **Unblocks:** T04.
 
+**Status:** Done; user confirmed 2026-10-06. Comparison and primary-source evidence are in
+[parser-research.md](parser-research.md); the recommended adapter and observed
+limits are in [the T03 design](design-v2.md#t03-parser-selection-and-source-preserving-adapter).
+The pinned-version [probe](parser-probe.py) passed: 10 selected paragraphs,
+8 source splices, nested list/definition columns, protected source gaps,
+inline rule offsets, token structure, and rendered-output checks.
+T02 and the markdown-it-py/mdit-py-plugins selection are confirmed.
+Production multiline source mapping remains T07 work; the probe is not a
+finished formatter or proof of all later acceptance criteria.
+
 ### Tasks
 
 - Evaluate a focused parser and, if needed, a minimal Markdown dependency
   against the agreed fixture plan. Do not introduce a renderer that rewrites
   all source syntax.
+  - We prefer to add an external dependency for markdown parsing, and will adopt the syntax this requires.
 - Demonstrate block boundaries, original source spans, nested list content
   columns, definition lists, and protected inline spans.
 - Record the selected approach and its limitations in a short design note.
@@ -112,20 +150,30 @@ implementation path; dependency edges define which work may overlap.
 
 **Depends on:** T01, T02, T03. **Unblocks:** T05, T06, T13.
 
+**Status:** To do; all prerequisites are complete.
+
 ### Tasks
 
 - Establish small typed interfaces for options, source blocks, prose spans,
   formatting, and I/O using the selected parsing approach.
-- Replace obsolete source and tests as needed, keeping the package installable
-  and retaining the `pysembr` entry point.
+- Delete all legacy `src/` and `tests/` content at the start. Create fresh source
+  and tests from the confirmed contract, keeping the package installable and
+  retaining the `pysembr` entry point. Do not port legacy implementation or tests.
+- Use the approved [language data](language-data-v2.json); retain no other old
+  implementation artifacts as references. The parser probe remains research,
+  rather than code to copy into the production package.
 - Add shared fixture helpers for exact source output, protected-block
   preservation, CLI execution, and failure injection.
-- Keep Python 3.11+ compatibility and minimal dependencies. Use `uv add` or
+- Target Python 3.14+: set `requires-python = ">=3.14"`, pin the development
+  interpreter with uv, and recreate the environment as needed.
+- Keep dependencies minimal. Use `uv add` or
   `uv remove` and generated lockfile updates for dependency changes.
 
 ### Done when
 
 - The new package structure imports and its meaningful initial tests pass.
+- No legacy source or tests remain under `src/` or `tests/`; package metadata,
+  interpreter selection, and quality gates use Python 3.14+.
 - Public interfaces are typed and allow paragraph logic to be tested without
   filesystem or CLI setup.
 - Legacy behavior is not accidentally retained as the new specification.
@@ -303,7 +351,9 @@ implementation path; dependency edges define which work may overlap.
   then call `Path.replace()` for the final destination.
 - Clean up only this run's staging file on handled failures; preserve the
   original failure diagnostic if cleanup also fails.
-- Implement agreed permissions, symlink, concurrency, and durability behavior.
+- Use normal OS replacement semantics; extra permissions/metadata handling,
+  symlink resolution, concurrency control, and crash durability are out of
+  scope per the user's T01 decision.
 
 ### Done when
 
