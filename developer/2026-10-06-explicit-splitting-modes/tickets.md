@@ -2,9 +2,9 @@
 
 ## Contract and workflow
 
-Implement the edited [user stories](user-stories.md). All tickets are planned.
-No implementation, release version change, or publication is part of this
-planning document.
+Implement the edited [user stories](user-stories.md). T01-T06 are implemented;
+T07 remains planned for integrated verification. No release version change or
+publication is part of this epic.
 
 The specific alias additions in US-02, US-03, and US-04 supersede US-01's earlier
 prohibition of numeric aliases. Implement this mapping for both CLI and INI;
@@ -319,7 +319,7 @@ viewing instructions after T05. Merge and run the full suite between waves.
 
 ## T06: Add and verify the section-1 manual
 
-**Status:** Planned. **Dependencies:** T04, T05. **Stories:** US-06.
+**Status:** Done. **Dependencies:** T04, T05. **Stories:** US-06.
 
 ### Work
 
@@ -342,6 +342,25 @@ viewing instructions after T05. Merge and run the full suite between waves.
 - The manual is readable locally and consistent with finalized CLI/help/README.
 - All US-06 topics and examples are present; rendering evidence is recorded.
 - This is the last feature/document deliverable before integrated verification.
+
+### Completion evidence
+
+- Added the portable section-1 manual at `docs/pysembr.1`, including every
+  current CLI option and mode alias, cumulative behavior and migration,
+  configuration lookup and vocabulary replacement rules, Markdown and width
+  behavior, encoding and line-ending preservation, stream/file precedence,
+  atomic same-file output, explanations, examples, and the README editor setup.
+- Added the README instruction to view the checkout-local page with
+  `man ./docs/pysembr.1`. The manual header uses the current package version,
+  2.1.0; no package version, runtime code, or dependency changed.
+- `mandoc -Tlint docs/pysembr.1` and an 80-column source check pass. Rendered
+  with `mandoc -Tutf8` and inspected headings, options, Windows path escapes,
+  migration text, and examples. `MANPAGER=cat man ./docs/pysembr.1` also
+  rendered the local page successfully.
+- Executed and compared the three mode examples, pipeline, separate-file and
+  same-file commands, `--explain` stdout/stderr example, `--show-options`, and
+  `--list-languages` using the installed CLI entry point with this worktree's
+  source. `git diff --check` passes.
 
 ## T07: Complete integrated acceptance and delivery verification
 
